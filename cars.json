@@ -1,7 +1,7 @@
 [
   {
     "id": "f492dd06-283e-4489-83b8-b4ef2cad56fb",
-    "titulo": "PASSAT 1,6TDI DISEL 105HP",
+    "titulo": "PASSAT 1,6TDI DISEL oi",
     "marca": "Volkswagen",
     "modelo": "Passat",
     "ano": "2013",
@@ -18,8 +18,8 @@
       "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758129142701-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_f822582a.jpg"
     ],
     "status": "sold",
-    "sold": false,
+    "sold": true,
     "createdAt": 1758129144007,
-    "sold_at": null
+    "sold_at": "2025-09-17T14:17:02.907Z"
   }
 ]
