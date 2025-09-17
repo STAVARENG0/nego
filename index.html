@@ -72,6 +72,46 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 #modal .nav.prev{ left:10px }
 #modal .nav.next{ right:10px }
 #modal .counter{ position:absolute; top:10px; left:10px; background:rgba(0,0,0,.45); padding:4px 8px; border-radius:10px; font-size:12px; color:#fff }
+
+/* AJUSTES MOBILE */
+@media (max-width: 600px) {
+  #modal .panel {
+    width: 96vw;
+    max-height: calc(100dvh - 20px);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #modal .hero {
+    aspect-ratio: 4/3;
+    max-height: 56svh;
+  }
+  #modal .nav {
+    z-index: 5;
+    width: clamp(32px, 9vw, 40px);
+    height: clamp(32px, 9vw, 40px);
+    font-size: clamp(20px, 6vw, 26px);
+  }
+  #modal .nav.prev { left: min(10px, 2.5vw); }
+  #modal .nav.next { right: min(10px, 2.5vw); }
+  #modal .details {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+  #modal .actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: 10px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    background: linear-gradient(180deg, rgba(11,35,38,0) 0%, #0b2326 45%);
+  }
+  #thumbs img { width: 72px; height: 52px; }
+  #modal .close { z-index: 6; }
+}
 </style>
 </head>
 <body>
@@ -82,7 +122,7 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
      <img src="logo.png" alt="Logo" style="max-width:220px;height:auto;display:block;margin:0 auto 2px;">
      <div class="subtitle"><span style="font-size:1.6rem;font-weight:600;color:var(--ivory)">Cars for Sale</span><br>Quality used cars • Ireland • Inquiries welcome</div>
    </div>
-   <!-- Botão Admin mantido com estilo original -->
+   <!-- Botão Admin mantido -->
    <a href="painel.html" class="btn" style="position:absolute; top:16px; right:16px; padding:8px 12px; border-radius:999px;background:linear-gradient(90deg,var(--muted), #cfd9d8); color:#0e2b2e; font-size:12px; width:auto; display:inline-block;text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.24)">Admin</a>
   </header>
 
@@ -93,7 +133,7 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
  </div>
 </div>
 
-<!-- MODAL STRUCTURE -->
+<!-- MODAL -->
 <div id="modal" aria-hidden="true" role="dialog">
   <div class="overlay" data-close></div>
   <div class="panel" role="document">
@@ -195,14 +235,11 @@ function render(list){
     body.innerHTML=`<h3 data-idx="${idx}">${titleText}</h3><div class="meta">${meta}</div><div class="price">${fmtEUR(c.preco)}</div>`;
     el.appendChild(body);
     body.querySelector('h3').addEventListener('click',()=>openModal(c));
-
-    // botão I'm interested mantido
     const cta=document.createElement('div'); cta.className='cta';
     const a=document.createElement('a'); a.className='btn'; a.target='_blank'; a.rel='noopener';
     a.href=`https://wa.me/${WHATSAPP}?text=Hello! I'm interested in the ${titleText}`;
     a.textContent="I'm interested";
     cta.appendChild(a); el.appendChild(cta);
-
     grid.appendChild(el);
   });
 }
