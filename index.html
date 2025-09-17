@@ -32,7 +32,7 @@ header{text-align:center;margin-bottom:12px}
 footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 
 /* SELO SOLD */
-.sold-flag{
+.sold-flag {
   position:absolute;
   top:10px;
   left:10px;
@@ -49,19 +49,135 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 
 /* MODAL */
 #modal{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; }
-/* ... resto do CSS sem alterações ... */
+#modal.open{ display:grid }
+#modal .overlay{ position:absolute; inset:0; background:rgba(0,0,0,.65); backdrop-filter: blur(2px); }
+#modal .panel{ position:relative; width:min(96vw,980px); max-height:92vh; overflow:hidden; background:#0b2326; color:var(--ivory); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 42px rgba(0,0,0,.6); display:grid; grid-template-columns: 1.2fr 1fr; }
+@media (max-width:860px){ #modal .panel{ grid-template-columns: 1fr; } }
+#modal .gallery{ background:#0b2326; padding:10px; display:flex; flex-direction:column; }
+#modal .hero-wrap{ position:relative; }
+#modal .hero{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; background:#102a2d }
+#thumbs{ display:flex; gap:8px; overflow:auto; padding:10px 0 }
+#thumbs img{ width:80px; height:60px; object-fit:cover; border-radius:8px; opacity:.8; cursor:pointer; border:1px solid rgba(255,255,255,.12) }
+#thumbs img.active{ opacity:1; outline:2px solid var(--orange) }
+#modal .details{ padding:16px; overflow:auto }
+#modal h2{ margin:0 0 8px; font-size:20px }
+#modal .meta{ margin:8px 0; font-size:13px; color:var(--muted) }
+#modal .price{ font-size:18px; margin:8px 0 12px; font-weight:700 }
+#modal .desc{ font-size:14px; line-height:1.5; color:#dfe7e6; white-space:pre-wrap }
+#modal .actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap }
+#modal .btn.secondary{ background:#122f32; color:#fff; box-shadow:none }
+#modal .close{ position:absolute; top:10px; right:10px; background:#122f32; color:#fff; border:0; border-radius:10px; padding:8px 10px; font-weight:700; cursor:pointer }
+/* setas e contador */
+#modal .nav{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.45); border:0; color:#fff; font-size:26px; line-height:1; width:40px; height:40px; border-radius:50%; cursor:pointer; display:grid; place-items:center }
+#modal .nav:hover{ filter:brightness(1.1) }
+#modal .nav.prev{ left:10px }
+#modal .nav.next{ right:10px }
+#modal .counter{ position:absolute; top:10px; left:10px; background:rgba(0,0,0,.45); padding:4px 8px; border-radius:10px; font-size:12px; color:#fff }
+
+/* AJUSTES MOBILE — v2 */
+@media (max-width: 600px) {
+  #modal .panel {
+    width: 96vw;
+    max-height: calc(100dvh - 20px);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #modal .hero {
+    aspect-ratio: 4/3;
+    max-height: 56svh;
+  }
+  #modal .nav {
+    z-index: 5;
+    width: clamp(32px, 9vw, 40px);
+    height: clamp(32px, 9vw, 40px);
+    font-size: clamp(20px, 6vw, 26px);
+  }
+  #modal .nav.prev { left: min(10px, 2.5vw); }
+  #modal .nav.next { right: min(10px, 2.5vw); }
+  #modal .details {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+  #modal .actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: 10px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    background: linear-gradient(180deg, rgba(11,35,38,0) 0%, #0b2326 45%);
+  }
+  #thumbs img { width: 72px; height: 52px; }
+  #modal .close { z-index: 6; }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
  <div class="card">
-   <!-- ... header igual ... -->
-   <section class="grid" id="cars"></section>
-   <!-- ... resto igual ... -->
+  <header>
+   <div class="brand" style="flex-direction:column;gap:8px;">
+     <img src="logo.png" alt="Logo" style="max-width:220px;height:auto;display:block;margin:0 auto 2px;">
+     <div class="subtitle"><span style="font-size:1.6rem;font-weight:600;color:var(--ivory)">Cars for Sale</span><br>Quality used cars • Ireland • Inquiries welcome</div>
+     <div style="text-align:center; font-size:0.9rem; color:var(--muted); margin-top:6px;">
+       Access also our car buy and sell groups via
+     </div>
+     <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap; margin-top:12px;">
+       <a href="https://chat.whatsapp.com/KSedyBxjEKd07OAC8AIJOz" target="_blank" rel="noopener"
+          style="display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:28px;
+                 background:#25D366; color:#fff; font-weight:600; text-decoration:none;">
+         <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg"
+              alt="WhatsApp" style="width:20px; height:20px; filter:invert(1);" />
+         WhatsApp
+       </a>
+       <a href="https://www.facebook.com/groups/1065592052316610/" target="_blank" rel="noopener"
+          style="display:flex; align-items:center; gap:8px; padding:10px 16px; border-radius:28px;
+                 background:#1877F2; color:#fff; font-weight:600; text-decoration:none;">
+         <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg"
+              alt="Facebook" style="width:20px; height:20px; filter:invert(1);" />
+         Facebook
+       </a>
+     </div>
+   </div>
+   <a href="painel.html" class="btn" style="position:absolute; top:16px; right:16px; padding:8px 12px; border-radius:999px;background:linear-gradient(90deg,var(--muted), #cfd9d8); color:#0e2b2e; font-size:12px; width:auto; display:inline-block;text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.24)">Admin</a>
+  </header>
+
+  <div class="divider"></div>
+  <section class="grid" id="cars"></section>
+  <div class="divider"></div>
+  <footer>© <span id="year"></span></footer>
  </div>
 </div>
 
-<!-- ... modal igual ... -->
+<!-- MODAL STRUCTURE -->
+<div id="modal" aria-hidden="true" role="dialog">
+  <div class="overlay" data-close></div>
+  <div class="panel" role="document">
+    <button class="close" data-close>&times; Close</button>
+    <div class="gallery">
+      <div class="hero-wrap">
+        <img id="hero" class="hero" alt="Car main photo" src=""/>
+        <button class="nav prev" id="gPrev" aria-label="Anterior">‹</button>
+        <button class="nav next" id="gNext" aria-label="Próxima">›</button>
+        <div class="counter" id="mCount">0/0</div>
+      </div>
+      <div id="thumbs"></div>
+    </div>
+    <div class="details">
+      <h2 id="mTitle">—</h2>
+      <div id="mMeta" class="meta">—</div>
+      <div id="mPrice" class="price">—</div>
+      <div id="mDesc" class="desc">—</div>
+      <div class="actions">
+        <a id="mWhats" class="btn" target="_blank" rel="noopener">I'm interested</a>
+        <a id="mCall" class="btn secondary" target="_blank" rel="noopener" style="display:none">Call</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const WHATSAPP = "353876342891";
@@ -82,7 +198,7 @@ function sanitizeList(list){
     foto: c.foto || c.photo || c.image || '',
     desc: c.desc || c.description || '',
     contato: c.contato || c.contact || '',
-    sold: !!c.sold,   // 👈 IMPORTANTE
+    sold: !!c.sold,   // 👈 flag do painel
     fotos: Array.isArray(c.fotos)?c.fotos:[]
   }));
 }
@@ -90,18 +206,26 @@ function sanitizeList(list){
 function render(list){
   grid.innerHTML = '';
   if(!list.length){
-    grid.innerHTML = '<div class="meta" style="text-align:center;padding:20px">No cars published yet.</div>';
+    const div=document.createElement('div');
+    div.className='meta';
+    div.style.textAlign='center';
+    div.style.padding='20px';
+    div.innerHTML='No cars published yet.';
+    grid.appendChild(div);
     return;
   }
   list.forEach((c, idx)=>{
     const el = document.createElement('article'); 
     el.className='car';
-    if(c.sold){ 
-      const soldTag = document.createElement('div'); 
-      soldTag.className='sold-flag'; 
-      soldTag.textContent='SOLD'; 
+
+    // 👉 SELO SOLD
+    if(c.sold){
+      const soldTag = document.createElement('div');
+      soldTag.className='sold-flag';
+      soldTag.textContent='SOLD';
       el.appendChild(soldTag);
     }
+
     const img = document.createElement('img'); 
     img.src = c.foto || 'logo.png'; 
     img.alt = c.titulo || 'Car photo'; 
@@ -115,7 +239,7 @@ function render(list){
 
     const cta = document.createElement('div'); cta.className='cta';
     const a = document.createElement('a'); a.className='btn'; a.target='_blank'; a.rel='noopener';
-    a.href = `https://wa.me/${WHATSAPP}?text=Hello! I'm interested in the ${titleText}`; 
+    a.href = `https://wa.me/${WHATSAPP}?text=Hello! I'm interested in the ${titleText}`;
     a.textContent = "I'm interested";
     cta.appendChild(a); el.appendChild(cta);
 
