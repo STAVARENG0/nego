@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>NextRide | Cars for Sale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<meta http-equiv="Cache-Control" content="no-store"/>
+<style>
+:root{ --teal:#0E3539; --ivory:#F2F0EA; --muted:#9EB3B2; --orange:#F07424; --card:#0b2326; }
+*{box-sizing:border-box}
+body{ margin:0; font-family:Poppins,system-ui,Arial,sans-serif; color:var(--ivory); background: var(--teal); min-height:100dvh; }
+.wrap{max-width:1024px;margin:0 auto;padding:26px}
+.card{ background:#0b2326; border-radius:26px; padding:28px 22px; border:1px solid rgba(255,255,255,.12); box-shadow:0 18px 42px rgba(0,0,0,.45), 0 0 26px rgba(14,53,57,.28); position:relative; }
+header{text-align:center;margin-bottom:12px}
+.subtitle{color:var(--muted);margin-top:0px;font-size:1rem;text-align:center}
+.divider{height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;align-items:stretch}
+.car{ background:#102a2d; border:1px solid rgba(255,255,255,.08); border-radius:18px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.28); display:flex;flex-direction:column; position:relative; }
+.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block}
+.car-body{padding:12px 14px 6px;text-align:center}
+.car h3{margin:0 0 6px;font-weight:700;font-size:16px;color:var(--ivory);cursor:pointer;text-decoration:underline dotted transparent}
+.car h3:hover{ text-decoration-color: rgba(255,255,255,.5) }
+.meta{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:8px}
+.price{font-weight:700;color:var(--ivory);margin-bottom:6px}
+.cta{padding:12px 14px 14px;border-top:1px dashed rgba(255,255,255,.08)}
+.btn{ display:block;width:100%;text-align:center;text-decoration:none;font-weight:700;padding:12px 14px;border-radius:28px;background:linear-gradient(90deg,var(--orange), #ffb37e);color:#102326; box-shadow:0 8px 20px rgba(240,116,36,.35); transition:transform .18s ease, filter .18s ease, box-shadow .18s ease; }
+.btn:hover{transform:translateY(-1px);filter:brightness(1.03)}
+.brand{display:flex;align-items:center;gap:12px;justify-content:center}
+footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
+
+/* BADGE SOLD GRANDE NO CANTO SUPERIOR */
+.sold-badge {
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#ef4444;
+  color:#fff;
+  font-weight:900;
+  font-size:32px;
+  padding:12px 24px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  text-transform:uppercase;
+  opacity:0.9;
+}
+.car.sold h3 { text-decoration: line-through; opacity:.7; }
+.car.sold .price { opacity:.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="card">
+  <header>
+   <div class="brand" style="flex-direction:column;gap:8px;">
+     <img src="logo.png" alt="Logo" style="max-width:220px;height:auto;display:block;margin:0 auto 2px;">
+     <div class="subtitle"><span style="font-size:1.6rem;font-weight:600;color:var(--ivory)">Cars for Sale</span><br>Quality used cars • Ireland • Inquiries welcome</div>
+   </div>
+   <a href="painel.html" class="btn" style="position:absolute; top:16px; right:16px; padding:8px 12px; border-radius:999px;background:linear-gradient(90deg,var(--muted), #cfd9d8); color:#0e2b2e; font-size:12px; width:auto; display:inline-block;text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.24)">Admin</a>
+  </header>
+
+  <div class="divider"></div>
+
+  <section class="grid" id="cars"></section>
+
+  <div class="divider"></div>
+
+  <footer>© <span id="year"></span></footer>
+ </div>
+</div>
+
+<!-- MODAL STRUCTURE -->
+<div id="modal" aria-hidden="true" role="dialog">
+  <div class="overlay" data-close></div>
+  <div class="panel" role="document">
+    <button class="close" data-close>&times; Close</button>
+    <div class="gallery">
+      <div class="hero-wrap">
+        <img id="hero" class="hero" alt="Car main photo" src=""/>
+        <button class="nav prev" id="gPrev" aria-label="Anterior">‹</button>
+        <button class="nav next" id="gNext" aria-label="Próxima">›</button>
+        <div class="counter" id="mCount">0/0</div>
+      </div>
+      <div id="thumbs"></div>
+    </div>
+    <div class="details">
+      <h2 id="mTitle">—</h2>
+      <div id="mMeta" class="meta">—</div>
+      <div id="mPrice" class="price">—</div>
+      <div id="mDesc" class="desc">—</div>
+      <div class="actions">
+        <a id="mWhats" class="btn" target="_blank" rel="noopener">I'm interested</a>
+        <a id="mCall" class="btn secondary" target="_blank" rel="noopener" style="display:none">Call</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WHATSAPP = "353876342891";
+const PUBLIC_JSON = './cars.json';
+const fmtEUR = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(Number(n||0));
+const grid = document.getElementById('cars');
+const modal = document.getElementById('modal');
+const hero = document.getElementById('hero');
+const thumbs = document.getElementById('thumbs');
+const mTitle = document.getElementById('mTitle');
+const mMeta = document.getElementById('mMeta');
+const mPrice = document.getElementById('mPrice');
+const mDesc = document.getElementById('mDesc');
+const mWhats = document.getElementById('mWhats');
+const mCall  = document.getElementById('mCall');
+const gPrev  = document.getElementById('gPrev');
+const gNext  = document.getElementById('gNext');
+const mCount = document.getElementById('mCount');
+
+function sanitizeList(list){
+  if(!Array.isArray(list)) return [];
+  return list.map(c => ({
+    id: c.id || crypto.randomUUID(),
+    titulo: c.titulo || c.title || '',
+    marca: c.marca || c.brand || '',
+    modelo: c.modelo || c.model || '',
+    ano: c.ano || c.year || '',
+    km: c.km || c.mileage || '',
+    preco: c.preco || c.price || '',
+    foto: c.foto || c.photo || c.image || '',
+    desc: c.desc || c.description || '',
+    contato: c.contato || c.contact || '',
+    sold: !!c.sold,
+    fotos: Array.isArray(c.fotos)?c.fotos : []
+  }));
+}
+
+async function readPublic(){
+  try{
+    const r = await fetch(PUBLIC_JSON + '?t=' + Date.now(), {cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    return sanitizeList(data);
+  }catch(e){
+    return [];
+  }
+}
+
+function openModal(c){
+  hero.src = c.foto || 'logo.png';
+  mTitle.textContent = c.titulo || (c.marca+' '+c.modelo);
+  mMeta.textContent = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
+  mPrice.textContent = c.preco?fmtEUR(c.preco):'';
+  mDesc.textContent = c.desc || '';
+  mWhats.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hello! I'm interested in "+mTitle.textContent)}`;
+  if(c.contato){ mCall.style.display='inline-block'; mCall.href = `tel:${c.contato.replace(/[^+\\d]/g,'')}`; } else { mCall.style.display='none'; }
+
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(){
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+modal.addEventListener('click', (ev)=>{ if(ev.target.hasAttribute('data-close')) closeModal(); });
+
+function render(list){
+  grid.innerHTML = '';
+  if(!list.length){
+    const div=document.createElement('div');div.className='meta';div.style.textAlign='center';div.style.padding='20px';
+    div.innerHTML='No cars published yet.';
+    grid.appendChild(div); return;
+  }
+  list.forEach((c, idx)=>{
+    const el = document.createElement('article'); 
+    el.className='car';
+    if(c.sold) el.classList.add('sold');
+
+    const img = document.createElement('img'); 
+    img.src = c.foto || 'logo.png'; 
+    img.alt = c.titulo || 'Car photo'; 
+    el.appendChild(img);
+
+    if(c.sold){
+      const badge = document.createElement('div');
+      badge.className = 'sold-badge';
+      badge.textContent = 'SOLD';
+      el.appendChild(badge);
+    }
+
+    const body = document.createElement('div'); body.className='car-body';
+    const meta = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
+    const titleText = c.titulo || (c.marca+' '+(c.modelo||''));
+    const titleEl = document.createElement('h3');
+    titleEl.textContent = titleText;
+    titleEl.dataset.idx = idx;
+    titleEl.addEventListener('click', ()=> openModal(c));
+    body.appendChild(titleEl);
+    body.innerHTML += `<div class="meta">${meta}</div><div class="price">${fmtEUR(c.preco)}</div>`;
+    el.appendChild(body);
+
+    const cta = document.createElement('div'); cta.className='cta';
+    const a = document.createElement('a'); a.className='btn'; a.target='_blank'; a.rel='noopener';
+    a.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hello! I'm interested in "+titleText)}`;
+    a.textContent = "I'm interested";
+    cta.appendChild(a); el.appendChild(cta);
+
+    grid.appendChild(el);
+  });
+}
+
+(async function init(){
+  const cars = await readPublic();
+  render(cars);
+})();
+</script>
+</body>
+</html>

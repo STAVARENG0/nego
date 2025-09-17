@@ -1,0 +1,942 @@
+<!-- PANEL AUTH GUARD -->
+<script>
+(function(){
+  try{
+    if(!sessionStorage.getItem('panel_logged_in')){
+      window.location.replace('login.html');
+    }else{
+      window.addEventListener('beforeunload', function(){ sessionStorage.removeItem('panel_logged_in'); });
+    }
+  }catch(e){}
+})();
+</script>
+<!-- /PANEL AUTH GUARD -->
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel Administrativo - NextRide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --teal:#0E3539; --ivory:#F2F0EA; --muted:#9EB3B2; --orange:#F07424;
+      --card:#0b2326; --border:rgba(255,255,255,.12); --ink:#102326; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+      background:var(--teal);color:var(--ivory);
+      min-height:100%; display:block; padding:16px 16px calc(96px + env(safe-area-inset-bottom));
+    }
+    .container{width:min(100%,980px);margin:0 auto}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:26px;
+      box-shadow:0 18px 42px rgba(0,0,0,.45), 0 0 26px rgba(14,53,57,.28);overflow:hidden}
+    .card-header{padding:20px 24px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;gap:12px}
+    .logo{width:36px;height:36px;border-radius:10px;background:#0e2b2e url('logo.png') center/cover no-repeat;border:1px solid var(--border)}
+    .title{font-size:18px;font-weight:700}
+    .subtitle{color:var(--muted);font-size:14px}
+    .section{padding:24px}
+    .grid{display:grid;gap:16px}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:720px){
+      .grid.cols-2{grid-template-columns:1fr}
+      .section{padding:16px}
+      .card-header{padding:16px}
+    }
+    label{display:block;font-size:13px;color:var(--muted);margin:8px 0 6px}
+    input,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--border);
+      background:#092023;color:var(--ivory);outline:none}
+    textarea{min-height:110px;resize:vertical}
+    .row{display:flex;gap:12px;align-items:center}
+    .btn{appearance:none;border:none;border-radius:999px;padding:12px 16px;font-weight:700;cursor:pointer}
+    .btn-primary{background:linear-gradient(90deg,var(--orange), #ffb37e);color:var(--ink); box-shadow:0 8px 20px rgba(240,116,36,.35)}
+    .btn-danger{background:#b91c1c;color:#fff}
+    .btn-muted{background:#111827;color:#fff}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .muted{color:var(--muted)}
+    .note{font-size:12px;color:var(--muted)}
+    a.clean{color:var(--muted);text-decoration:none}
+
+    /* BARRA INFERIOR */
+    #pubbar{position:fixed;left:12px;right:12px;bottom:12px;display:flex;gap:8px;justify-content:flex-end;z-index:999999}
+    #pubbar .box{background:#0b2326;color:#F2F0EA;border:1px solid rgba(255,255,255,.12);padding:10px 12px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+    #pubbar button{border:0;border-radius:999px;padding:10px 14px;font-weight:700;cursor:pointer;background:linear-gradient(90deg,#F07424,#ffb37e);color:#102326; box-shadow:0 8px 20px rgba(240,116,36,.35)}
+
+    /* MODAL CONFIG GITHUB */
+    #cfg-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000000}
+    #cfg-modal.open{display:flex}
+    #cfg-modal .panel{ position:relative; background:#0b2326;color:#F2F0EA;border:1px solid rgba(255,255,255,.12);padding:16px;border-radius:16px;width:min(92vw,560px);box-shadow:0 16px 36px rgba(0,0,0,.45)}
+    #cfg-modal label{display:block;margin-bottom:10px;font-size:.9rem;color:#9EB3B2}
+    #cfg-modal input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#092023;color:#fff;margin-top:6px}
+    #cfg-modal .row{display:flex;gap:10px}
+    #cfg-modal .row > *{flex:1}
+    #cfg-modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+
+    /* FOTO/GALERIA */
+    .actions-row{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    .pretty-btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 16px rgba(0,0,0,.18);transition:transform .02s ease, filter .2s ease}
+    .pretty-btn.primary{background:#2563eb;color:#fff}
+    .pretty-btn.secondary{background:#111827;color:#fff}
+    .pretty-btn:active{transform:translateY(1px)}
+    .visually-hidden-file{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;}
+
+    .grid-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+    .thumb{position:relative;background:#0b2326;border:1px dashed var(--border);border-radius:12px;overflow:hidden;min-height:90px;display:grid;place-items:center}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .thumb .badge{position:absolute;top:6px;left:6px;background:#111827;color:#fff;border-radius:10px;padding:2px 6px;font-size:11px;opacity:.9}
+    .thumb .tools{position:absolute;bottom:6px;left:6px;right:6px;display:flex;gap:6px;justify-content:space-between}
+    .chip{border:0;border-radius:999px;padding:6px 8px;font-size:12px;font-weight:700;cursor:pointer}
+    .chip.setcover{background:linear-gradient(90deg,var(--orange),#ffb37e);color:#102326}
+    .chip.delete{background:#b91c1c;color:#fff}
+    /* Modal close button (hit area fixed) */
+    #cfg-modal .modal-x{
+      position:absolute; top:8px; right:8px;
+      width:36px; height:36px;
+      display:grid; place-items:center;
+      background:transparent; border:0; color:#F2F0EA;
+      font-size:22px; line-height:1; cursor:pointer;
+      z-index:2;
+    }
+    #cfg-modal .modal-x:focus{ outline:2px solid var(--border); outline-offset:2px; }
+
+  </style>
+</head>
+<body>
+  <div class="container card" id="app">
+    <div class="card-header">
+      <div class="logo" aria-hidden="true"></div>
+      <div style="flex:1">
+        <div class="title">Painel Administrativo</div>
+        <div class="subtitle">Publicação de carros (GitHub-only)</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-muted" id="btnCfg" onclick="document.getElementById('cfg-modal').classList.add('open')">Configurar GitHub</button>
+        <button class="btn btn-danger" id="btnSair" onclick="try{sessionStorage.removeItem('panel_logged_in')}catch(e){};location.href='login.html'">Sair</button>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="grid cols-2">
+        <div>
+          <h2 style="margin:0 0 6px">Novo anúncio</h2>
+          <p class="muted" style="margin:0 0 12px">Preencha os dados e publique <strong>direto no GitHub</strong>.</p>
+          <form id="carForm">
+            <label>Título do anúncio</label>
+            <input id="fTitulo" placeholder="Ex.: Honda Civic Touring 1.5 Turbo" required />
+
+            <label>Marca</label>
+            <input id="fMarca" placeholder="Ex.: Honda" required />
+
+            <label>Modelo</label>
+            <input id="fModelo" placeholder="Ex.: Civic" required />
+
+            <label>Ano</label>
+            <input id="fAno" type="number" min="1900" max="2100" placeholder="Ex.: 2020" required />
+
+            <label>Preço (R$)</label>
+            <input id="fPreco" type="number" min="0" step="0.01" placeholder="Ex.: 125000" required />
+
+            <label>Quilometragem (km)</label>
+            <input id="fKm" type="number" min="0" step="1" placeholder="Ex.: 45000" />
+
+            <label>Contato</label>
+            <input id="fContato" placeholder="Ex.: (11) 99999-9999" />
+
+            <label>Descrição</label>
+            <textarea id="fDesc" placeholder="Informações adicionais do veículo"></textarea>
+
+            <label>Fotos do carro</label>
+            <div class="note">Você pode adicionar várias fotos. A primeira vira a <strong>capa</strong> (foto principal). Todas são comprimidas e salvas como Data URL no JSON.</div>
+
+            <!-- ✔ Somente dois botões visíveis -->
+            <div class="actions-row">
+  <label for="inputGaleria" class="pretty-btn primary">Adicionar fotos (galeria)</label>
+  <label for="inputCamera"  class="pretty-btn secondary">Tirar fotos (câmera)</label>
+</div>
+<input id="inputGaleria" class="visually-hidden-file" type="file" accept="image/*" multiple>
+<input id="inputCamera" class="visually-hidden-file" type="file" accept="image/*" capture="environment">
+
+            <div id="fotosGrid" class="grid-photos" aria-live="polite"></div>
+
+            <div class="actions" style="margin-top:16px">
+              <button class="btn btn-primary" type="submit" id="btnPublishDirect">Publicar direto no GitHub</button>
+            </div>
+          </form>
+        </div>
+        <div>
+          <h3 style="margin-top:0">Anúncios (GitHub)</h3>
+          <p class="note">Esta lista é carregada do arquivo <code>cars.json</code> do repositório configurado. Você pode excluir itens aqui; isso fará um commit no GitHub.</p>
+          <table class="table" id="tblGit">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Preço</th>
+                <th>Data</th>
+                <th style="width:1%">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4" class="muted">Carregando do GitHub…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Barra inferior: somente Download -->
+  <div id="pubbar">
+    <div class="box">
+      <button id="btnDownload">Download cars.json</button>
+    </div>
+  </div>
+
+  <div id="cfg-modal">
+    <div class="panel">
+<button class="modal-x" aria-label="Fechar" title="Fechar" onclick="document.getElementById('cfg-modal').classList.remove('open')" >&times;</button>
+      <h3 style="margin:0 0 10px; position:relative;">Configurar GitHub</h3>
+
+      <div class="row">
+        <label>Repository (owner/repo)
+          <input id="gh_repo" placeholder="owner/repo" value="STAVARENG0/NextRide">
+        </label>
+        <label>Branch
+          <input id="gh_branch" value="main">
+        </label>
+      </div>
+      <label>File path
+        <input id="gh_path" value="cars.json">
+      </label>
+      <label>Personal Access Token (PAT)
+        <input id="gh_token" placeholder="ghp_...">
+      </label>
+      <div class="actions">
+        <button id="btnCfgSave" class="btn btn-primary" type="button">Salvar</button>
+        <button id="btnCfgTest" class="btn btn-muted" type="button">Testar conexão</button>
+        <button id="btnCfgLink" style="display:none" class="btn" type="button" title="Gera um link com as configurações (inclui o token)">Gerar link de acesso</button>
+        <input id="cfg-link-out" style="display:none" type="text" readonly style="flex:1; min-width: 260px; max-width:100%; margin-top:.5rem" placeholder="O link aparecerá aqui...">
+        <button id="btnCfgCopy" style="display:none" class="btn btn-muted" type="button" title="Copia o link para a área de transferência">Copiar link</button>
+      </div>
+      
+      <div class="cfg-sync" style="margin-top:.75rem">
+        <label style="display:block;margin-bottom:.25rem">
+          <input type="checkbox" id="cfg-sync" style="display:none"> Sincronizar configurações no repositório (criptografado)
+        </label>
+        <div id="cfg-sync-opts" style="display:none" style="display:none; margin:.5rem 0 0 0">
+          <label style="display:block">
+            Frase-secreta (para criptografia)
+            <input type="password" id="cfg-pass" placeholder="Digite uma frase-secreta forte" autocomplete="new-password">
+          </label>
+          <label style="display:block; margin-top:.25rem">
+            <input type="checkbox" id="cfg-remember-pass"> Lembrar frase-secreta neste dispositivo
+          </label>
+        </div>
+      </div>
+      <div style="display:flex; gap:.5rem; align-items:center; margin:.5rem 0">
+        <button id="btnCfgLoad" style="display:none" class="btn btn-muted" type="button">Carregar config sincronizada</button>
+      </div>
+
+      <div id="cfg-msg" class="note" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script>
+    // Utils
+    const $ = (sel,ctx=document)=>ctx.querySelector(sel);
+    const $$ = (sel,ctx=document)=>Array.from(ctx.querySelectorAll(sel));
+    const fmtBRL = n => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(n||0));
+    const escapeHTML = (s='')=> String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
+
+    // Sessão
+    $('#btnSair').addEventListener('click', ()=>{ try{ sessionStorage.removeItem('panel_logged_in'); }catch(e){} location.href = 'login.html'; });
+
+    
+    // --------- GITHUB CONFIG ---------
+    const GH_CFG_KEY = 'gh_cfg_v1';
+    const cfg = { repo:'STAVARENG0/NextRide', branch:'main', path:'cars.json', token:'' };
+
+    function loadCfg(){
+      try{
+        Object.assign(cfg, JSON.parse(localStorage.getItem(GH_CFG_KEY)||'{}'));
+      }catch(e){}
+      const r = $('#gh_repo'), b=$('#gh_branch'), p=$('#gh_path'), t=$('#gh_token');
+      if(r) r.value = cfg.repo || '';
+      if(b) b.value = cfg.branch || 'main';
+      if(p) p.value = cfg.path || 'cars.json';
+      if(t) t.value = cfg.token || '';
+    }
+
+    function saveCfg(){
+      try{
+        cfg.repo   = ($('#gh_repo')?.value||'').trim();
+        cfg.branch = ($('#gh_branch')?.value||'').trim() || 'main';
+        cfg.path   = (($('#gh_path')?.value||'').trim().replace(/^\/+/, '')) || 'cars.json';
+        cfg.token  = ($('#gh_token')?.value||'').trim();
+        localStorage.setItem(GH_CFG_KEY, JSON.stringify(cfg));
+        const m=$('#cfg-msg'); if(m) m.textContent='Configurações salvas.';
+      }catch(e){ console && console.error && console.error('saveCfg error', e); }
+    }
+
+    (function(){
+      const btnOpen = $('#btnCfg');
+      if(btnOpen){
+        btnOpen.addEventListener('click', ()=>{ loadCfg(); $('#cfg-modal').classList.add('open'); });
+      }
+      
+      
+      const btnSave = $('#btnCfgSave');
+      if(btnSave){
+        btnSave.addEventListener('click', async ()=>{
+          try{ await commitPlainCfg(); }catch(_e){ /* ignore, mensagem após teste */ }
+
+          saveCfg();
+          // Sync criptografado opcional
+          try{
+            const chk = $('#cfg-sync');
+            if(chk && chk.checked){
+              const passEl = $('#cfg-pass');
+              const remember = $('#cfg-remember-pass') && $('#cfg-remember-pass').checked;
+              const pass = passEl && passEl.value;
+              if(!pass){ const m=$('#cfg-msg'); if(m) m.textContent='Informe a frase-secreta para sincronizar com o repositório.'; return; }
+              await commitEncryptedCfg(pass);
+              try{
+                localStorage.setItem('cfg_remember_pass', remember ? '1' : '0');
+                if(remember) localStorage.setItem('cfg_passphrase', pass);
+                else localStorage.removeItem('cfg_passphrase');
+              }catch(_e){}
+            }
+          }catch(e){
+            const m=$('#cfg-msg'); if(m) m.textContent='Falha ao sincronizar config: '+e.message;
+          }
+          const ok = await testCfg();
+          if(ok){
+            const m=$('#cfg-msg'); if(m) m.textContent='Configurações salvas, sincronizadas e conexão OK.';
+            $('#cfg-modal').classList.remove('open');
+            if(typeof init==='function') init();
+          }else{
+            const m=$('#cfg-msg'); if(m) m.textContent=(m.textContent||'')+' (As configurações foram salvas.)';
+          }
+        });
+      }
+
+      const btnTest = $('#btnCfgTest');
+      if(btnTest){
+        btnTest.addEventListener('click', async ()=>{
+          saveCfg();
+          await testCfg();
+        });
+      }
+
+    })();
+    // --------- GITHUB API ---------
+// --------- GITHUB API ---------
+    function apiHeaders(){
+  const h={
+    'Accept':'application/vnd.github+json',
+    'X-GitHub-Api-Version':'2022-11-28'
+  };
+  if(cfg.token) h['Authorization']='token '+cfg.token;
+  return h;
+}
+function b64(str){ return btoa(unescape(encodeURIComponent(str))); }
+    function ub64(b){ return decodeURIComponent(escape(atob((b||'').replace(/\n/g,'')))); }
+    async function getFileMeta(){
+      const url=`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}?ref=${encodeURIComponent(cfg.branch)}&_=${Date.now()}`;
+      // ⚠️ força evitar cache do navegador/CDN
+      const res=await fetch(url,{headers:apiHeaders(), cache:'no-store'});
+      if(!res.ok) throw new Error('GitHub GET '+res.status);
+      return await res.json();
+    }
+    async function readCars(){
+      try{
+        const meta=await getFileMeta();
+        const text=ub64(meta.content||'');
+        const arr=JSON.parse(text||'[]');
+        return { list:Array.isArray(arr)?arr:[], sha: meta.sha||null };
+      }catch(e){
+        if(String(e).includes('404')) return { list:[], sha:null };
+        throw e;
+      }
+    }
+
+      const btnLink = $('#btnCfgLink');
+      const outLink = $('#cfg-link-out');
+      if(btnLink && outLink){
+        btnLink.addEventListener('click', ()=>{
+          try{
+            const url = generateAccessLink();
+            outLink.value = url;
+            const m=$('#cfg-msg'); if(m) m.textContent='Link de acesso gerado. Guarde-o com segurança!';
+          }catch(e){
+            const m=$('#cfg-msg'); if(m) m.textContent='Erro ao gerar link: '+e.message;
+          }
+        });
+      }
+      const btnCopy = $('#btnCfgCopy');
+      if(btnCopy && outLink){
+        btnCopy.addEventListener('click', async ()=>{
+          if(!outLink.value){ const url = generateAccessLink(); outLink.value = url; }
+          try{
+            await navigator.clipboard.writeText(outLink.value);
+            const m=$('#cfg-msg'); if(m) m.textContent='Link copiado para a área de transferência.';
+          }catch(e){
+            const m=$('#cfg-msg'); if(m) m.textContent='Não foi possível copiar automaticamente. Selecione e copie o link manualmente.';
+          }
+        });
+      }
+    async function writeCars(list, sha){
+      const api=`https://api.github.com/repos/${cfg.repo}/contents/${cfg.path}`;
+      const body={ message:'chore: update cars.json', content:b64(JSON.stringify(list,null,2)), branch:cfg.branch };
+      if(sha) body.sha=sha;
+      const res=await fetch(api,{method:'PUT', headers:Object.assign({}, apiHeaders(), {'Content-Type':'application/json'}), body:JSON.stringify(body)});
+      if(!res.ok) throw new Error('GitHub PUT '+res.status);
+      const out = await res.json();
+      try{
+        // Atualiza UI imediatamente
+        cacheList = Array.isArray(list)?list:[];
+        currentSha = (out && out.content && out.content.sha) ? out.content.sha : (sha || currentSha);
+        renderGitTable();
+      }catch(_e){}
+      return out;
+    }
+
+    
+    
+    // --------- SYNC CRIPTO: salvar/ler token seguro no repositório ---------
+    const SYNC_VERSION = 1;
+    function b64encode(buf){
+      let bin=''; const bytes=new Uint8Array(buf);
+      for(const b of bytes) bin += String.fromCharCode(b);
+      return btoa(bin);
+    }
+    function b64decode(str){
+      const bin = atob(str); const bytes = new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+      return bytes.buffer;
+    }
+    async function deriveKey(pass, salt, iter=250000){
+      const enc = new TextEncoder();
+      const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name:'PBKDF2', salt:salt, iterations:iter, hash:'SHA-256' },
+        keyMaterial,
+        { name:'AES-GCM', length:256 },
+        false,
+        ['encrypt','decrypt']
+      );
+    }
+    async function encryptJSON(obj, pass){
+      const enc = new TextEncoder();
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const key = await deriveKey(pass, salt);
+      const data = enc.encode(JSON.stringify(obj));
+      const cipher = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, data);
+      return {
+        v: SYNC_VERSION,
+        alg: 'PBKDF2-AESGCM',
+        iter: 250000,
+        salt: b64encode(salt),
+        iv: b64encode(iv),
+        ciphertext: b64encode(cipher)
+      };
+    }
+    async function decryptJSON(payload, pass){
+      const salt = new Uint8Array(new Uint8Array(b64decode(payload.salt)));
+      const iv   = new Uint8Array(new Uint8Array(b64decode(payload.iv)));
+      const key  = await deriveKey(pass, salt, payload.iter||250000);
+      const cipherBuf = b64decode(payload.ciphertext);
+      const clear = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, cipherBuf);
+      const dec = new TextDecoder();
+      return JSON.parse(dec.decode(clear));
+    }
+    function cfgDir(){
+      try{
+        if(!cfg.path) return '';
+        const parts = cfg.path.split('/'); parts.pop();
+        return parts.join('/');
+      }catch(_e){ return ''; }
+    }
+    function encPath(){
+      const dir = cfgDir();
+      return (dir ? (dir + '/') : '') + '.panelcfg.enc.json';
+    }
+    async function ghGetContent(path, useToken=false){
+      const url = `https://api.github.com/repos/${cfg.repo}/contents/${path}?ref=${encodeURIComponent(cfg.branch)}`;
+      const headers = useToken ? apiHeaders() : {'Accept':'application/vnd.github+json'};
+      const res = await fetch(url, {headers, cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.json();
+    }
+    async function ghPutContent(path, message, contentB64, sha){
+      const url = `https://api.github.com/repos/${cfg.repo}/contents/${path}`;
+      const body = { message, content: contentB64, branch: cfg.branch };
+      if(sha) body.sha = sha;
+      const res = await fetch(url, { method:'PUT', headers: apiHeaders(), body: JSON.stringify(body) });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      return res.json();
+    }
+    function utf8ToB64(str){
+      return btoa(unescape(encodeURIComponent(str)));
+    }
+    function b64ToUtf8(b64){
+      return decodeURIComponent(escape(atob(b64)));
+    }
+    async function commitEncryptedCfg(pass){
+      if(!cfg || !cfg.repo || !cfg.branch){ throw new Error('Repo/branch não definidos'); }
+      if(!cfg.token){ throw new Error('Token ausente'); }
+      // monta payload
+      const encPayload = await encryptJSON(
+        { token: cfg.token, repo: cfg.repo, branch: cfg.branch, path: cfg.path },
+        pass
+      );
+      const jsonStr = JSON.stringify(encPayload, null, 2);
+      const contentB64 = utf8ToB64(jsonStr);
+      // pega sha se existir
+      let sha = undefined;
+      try{
+        const curr = await ghGetContent(encPath(), true);
+        sha = curr.sha;
+      }catch(_e){ /* new file */ }
+      const commitMsg = sha ? 'Atualiza config criptografada do painel' : 'Add config criptografada do painel';
+      await ghPutContent(encPath(), commitMsg, contentB64, sha);
+      const m=$('#cfg-msg'); if(m) m.textContent='Configurações criptografadas sincronizadas no repositório.';
+    }
+    async function loadSyncedCfg(pass){
+      if(!cfg || !cfg.repo || !cfg.branch){ throw new Error('Repo/branch não definidos'); }
+      // tenta sem token (se repo público). Se privado, tentará com token local (se houver)
+      let data;
+      try{
+        data = await ghGetContent(encPath(), false);
+      }catch(_e){
+        // fallback: se tiver token local, usa
+        data = await ghGetContent(encPath(), true);
+      }
+      const raw = b64ToUtf8(data.content);
+      const payload = JSON.parse(raw);
+      const dec = await decryptJSON(payload, pass);
+      if(dec.token) cfg.token = dec.token;
+      if(dec.repo)  cfg.repo  = dec.repo;
+      if(dec.branch) cfg.branch = dec.branch;
+      if(dec.path)  cfg.path  = dec.path;
+      saveCfg(); // persiste no localStorage (sem sobrescrever pass)
+      const m=$('#cfg-msg'); if(m) m.textContent='Configurações sincronizadas carregadas com sucesso.';
+      if(typeof init==='function') init();
+      return true;
+    }
+    function syncUIInit(){
+      const chkSync = $('#cfg-sync');
+      const box     = $('#cfg-sync-opts');
+      if(chkSync && box){
+        chkSync.addEventListener('change', ()=>{ box.style.display = chkSync.checked ? 'block':'none'; });
+      }
+      // Restaura preferência de lembrar frase-secreta
+      try{
+        const savedRemember = localStorage.getItem('cfg_remember_pass') === '1';
+        const savedPass = localStorage.getItem('cfg_passphrase') || '';
+        if($('#cfg-remember-pass')) $('#cfg-remember-pass').checked = savedRemember;
+        if(savedRemember && savedPass && $('#cfg-pass')) $('#cfg-pass').value = savedPass;
+      }catch(_e){}
+      const btnLoad = $('#btnCfgLoad');
+      if(btnLoad){
+        btnLoad.addEventListener('click', async ()=>{
+          const pass = ($('#cfg-pass') && $('#cfg-pass').value) || '';
+          if(!pass){ const m=$('#cfg-msg'); if(m) m.textContent='Informe a frase-secreta para carregar a config sincronizada.'; return; }
+          try{
+            await loadSyncedCfg(pass);
+          }catch(e){
+            const m=$('#cfg-msg'); if(m) m.textContent='Falha ao carregar config sincronizada: '+e.message;
+          }
+        });
+      }
+    }
+    // Chama no boot se disponível
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded', syncUIInit);
+    }else{
+      syncUIInit();
+    }
+
+    // --------- LINK DE ACESSO (sem frase-secreta) ---------
+    function encCfgToB64(obj){
+      try{ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+      catch(e){ return btoa(JSON.stringify(obj)); }
+    }
+    function decCfgFromB64(b64){
+      try{ return JSON.parse(decodeURIComponent(escape(atob(b64)))); }
+      catch(e){ return JSON.parse(atob(b64)); }
+    }
+    function generateAccessLink(){
+      const base = window.location.href.split('#')[0];
+      const payload = {
+        repo: (cfg && cfg.repo)||'',
+        branch: (cfg && cfg.branch)||'',
+        path: (cfg && cfg.path)||'',
+        token: (cfg && cfg.token)||''
+      };
+      const b64 = encCfgToB64(payload);
+      return base + '#c=' + b64;
+    }
+    function applyCfgPayload(obj){
+      if(!obj) return;
+      if(typeof cfg!=='object') cfg = {};
+      if(obj.repo)   cfg.repo = obj.repo;
+      if(obj.branch) cfg.branch = obj.branch;
+      if(obj.path)   cfg.path = obj.path;
+      if(obj.token)  cfg.token = obj.token;
+      saveCfg();
+      const m=$('#cfg-msg'); if(m) m.textContent='Configurações aplicadas a partir do link de acesso.';
+      if(typeof init==='function') init();
+    }
+    function parseHashCfg(){
+      const h = window.location.hash || '';
+      const m = h.match(/(?:#|&)c=([^&]+)/);
+      if(m && m[1]){
+        try{
+          const obj = decCfgFromB64(m[1]);
+          applyCfgPayload(obj);
+        }catch(e){
+          const m=$('#cfg-msg'); if(m) m.textContent='Falha ao ler o link de acesso: '+e.message;
+        }
+      }
+    }
+    // Executa no carregamento e em mudanças do hash
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded', parseHashCfg);
+    }else{
+      parseHashCfg();
+    }
+    window.addEventListener('hashchange', parseHashCfg);
+
+    // --------- AUTO SYNC SIMPLES (sem frase-secreta, inclui token) ---------
+    function cfgJsonPath(){
+      try{
+        const parts = (cfg.path||'cars.json').split('/'); parts.pop();
+        const dir = parts.join('/');
+        return (dir?dir+'/':'') + '.panelcfg.json';
+      }catch(_e){ return '.panelcfg.json'; }
+    }
+    async function readCfgJsonAnonymous(){
+      // tenta ler sem token (para repo público)
+      const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfgJsonPath()}?ref=${encodeURIComponent(cfg.branch||'main')}`;
+      const res = await fetch(url, { headers: {'Accept':'application/vnd.github+json'}, cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      const raw = atob(data.content);
+      return JSON.parse(decodeURIComponent(escape(raw)));
+    }
+    async function readCfgJsonWithToken(){
+      const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfgJsonPath()}?ref=${encodeURIComponent(cfg.branch||'main')}`;
+      const res = await fetch(url, { headers: apiHeaders(), cache:'no-store'});
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data = await res.json();
+      const raw = atob(data.content);
+      return JSON.parse(decodeURIComponent(escape(raw)));
+    }
+    async function commitPlainCfg(){
+      if(!cfg || !cfg.repo || !cfg.branch || !cfg.path || !cfg.token) throw new Error('Preencha repo/branch/path/token');
+      const payload = {
+        repo: cfg.repo, branch: cfg.branch, path: cfg.path, token: cfg.token,
+        updatedAt: new Date().toISOString()
+      };
+      const jsonStr = JSON.stringify(payload, null, 2);
+      const contentB64 = btoa(unescape(encodeURIComponent(jsonStr)));
+      // Descobre SHA existente para atualizar
+      let sha;
+      try{
+        const url = `https://api.github.com/repos/${cfg.repo}/contents/${cfgJsonPath()}?ref=${encodeURIComponent(cfg.branch)}`;
+        const cur = await fetch(url, { headers: apiHeaders(), cache:'no-store'});
+        if(cur.ok){
+          const js = await cur.json();
+          sha = js.sha;
+        }
+      }catch(_e){}
+      const putUrl = `https://api.github.com/repos/${cfg.repo}/contents/${cfgJsonPath()}`;
+      const body = { message: sha ? 'Atualiza .panelcfg.json' : 'Cria .panelcfg.json', content: contentB64, branch: cfg.branch };
+      if(sha) body.sha = sha;
+      const up = await fetch(putUrl, { method:'PUT', headers: apiHeaders(), body: JSON.stringify(body) });
+      if(!up.ok) throw new Error('Falha ao gravar .panelcfg.json (HTTP '+up.status+')');
+      return true;
+    }
+    async function autoLoadCfgFromRepo(){
+      try{
+        // Usa repo/branch/path atuais (mínimo) para descobrir o caminho do arquivo
+        // Se ainda não houver repo, tenta heurística: ler de localStorage primeiro
+        try{ loadCfg && loadCfg(); }catch(_e){}
+        if(!cfg || !cfg.repo){ return; }
+        let data;
+        try{
+          data = await readCfgJsonAnonymous();
+        }catch(_eAnon){
+          // Se falhar anônimo (repo privado), tenta com token local (se existir)
+          try{
+            data = await readCfgJsonWithToken();
+          }catch(_ePriv){
+            return; // sem como carregar
+          }
+        }
+        if(!data) return;
+        if(typeof cfg!=='object') cfg = {};
+        // aplica
+        cfg.repo = data.repo || cfg.repo;
+        cfg.branch = data.branch || cfg.branch;
+        cfg.path = data.path || cfg.path;
+        cfg.token = data.token || cfg.token;
+        saveCfg();
+        if(typeof init==='function') init();
+      }catch(_e){}
+    }
+    // chama no boot
+    (async ()=>{ try{ await autoLoadCfgFromRepo(); }catch(_e){} })();
+// --------- TESTAR CONFIG (repo/token) ---------
+    async function testCfg(){
+      try{
+        // Checa se o repositório é acessível com o token informado (ou público)
+        const repoUrl = `https://api.github.com/repos/${cfg.repo}`;
+        const repoRes = await fetch(repoUrl,{headers:apiHeaders(), cache:'no-store'});
+        if(!repoRes.ok) throw new Error('HTTP '+repoRes.status);
+        // Tenta ler o cars.json (se 404: tudo bem, será criado no primeiro "Publicar")
+        try{ await readCars(); }catch(_e){ /* ignora */ }
+        const m=$('#cfg-msg'); if(m) m.textContent='Conexão OK com o GitHub. Se o arquivo não existir, será criado no primeiro "Publicar".';
+        return true;
+      }catch(e){
+        const m=$('#cfg-msg'); if(m) m.textContent='Falha na conexão: '+e.message+'. Verifique owner/repo, branch, path e token (escopo: contents:write).';
+        return false;
+      }
+    }
+
+const MAX_FOTOS = 12;
+let galeria = []; // arquivos selecionados (File)
+let galeriaLinks = []; // links já enviados ao GitHub
+
+function renderGaleria(){
+  const grid = $('#fotosGrid');
+  if(!galeria.length && !galeriaLinks.length){ 
+    grid.innerHTML = '<div class="muted" style="grid-column:1/-1">Sem fotos. Adicione acima.</div>'; 
+    return; 
+  }
+
+  const locais = galeria.map((file, idx)=>{
+    const preview = URL.createObjectURL(file);
+    return `
+      <div class="thumb">
+        <img src="${preview}" alt="foto local ${idx+1}">
+        ${idx===0?'<div class="badge">Capa</div>':''}
+        <div class="tools">
+          <button type="button" class="chip delete" data-act="del-local" data-idx="${idx}">Excluir</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const publicadas = galeriaLinks.map((src, idx)=>{
+    return `
+      <div class="thumb">
+        <img src="${src}" alt="foto publicada ${idx+1}">
+        ${idx===0 && !galeria.length?'<div class="badge">Capa</div>':''}
+        <div class="tools">
+          <button type="button" class="chip delete" data-act="del-link" data-idx="${idx}">Excluir</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.innerHTML = locais + publicadas;
+
+  $$('#fotosGrid [data-act="del-local"]').forEach(btn=>btn.addEventListener('click',()=>{
+    const i=Number(btn.getAttribute('data-idx')); 
+    galeria.splice(i,1);
+    renderGaleria();
+  }));
+  $$('#fotosGrid [data-act="del-link"]').forEach(btn=>btn.addEventListener('click',()=>{
+    const i=Number(btn.getAttribute('data-idx')); 
+    galeriaLinks.splice(i,1);
+    renderGaleria();
+  }));
+}
+
+async function addFiles(files){
+  const arr = Array.from(files||[]);
+  if(!arr.length) return;
+  for(const file of arr){
+    if(!file.type.startsWith('image/')) continue;
+    if(galeria.length + galeriaLinks.length < MAX_FOTOS){ 
+      galeria.push(file); 
+    }
+  }
+  renderGaleria();
+}
+
+$('#inputGaleria').addEventListener('change', (ev)=>{ 
+  addFiles(ev.target.files); 
+  ev.target.value=''; 
+});
+$('#inputCamera').addEventListener('change', (ev)=>{ 
+  addFiles(ev.target.files); 
+  ev.target.value=''; 
+});
+
+// --------- TABELA// --------- TABELA (GitHub) ---------
+    let currentSha = null; // sha do cars.json carregado
+    let cacheList = [];    // lista em memória
+
+    function renderGitTable(){
+      const tbody = $('#tblGit tbody');
+      if(!cacheList.length){ tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum anúncio.</td></tr>`; return; }
+      tbody.innerHTML = cacheList.map(item=>{
+        const dt = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-BR') : '-';
+        return `<tr>
+          <td>${escapeHTML(item.titulo || '')}</td>
+          <td>${fmtBRL(item.preco)}</td>
+          <td>${dt}</td>
+          <td><button class="btn btn-danger" data-act="del" data-id="${item.id}">Excluir</button></td>
+        </tr>`;
+      }).join('');
+      $$('#tblGit [data-act="del"]').forEach(btn=>btn.addEventListener('click', onDeleteItem));
+    }
+    async function refreshFromGit(){
+      $('#tblGit tbody').innerHTML = `<tr><td colspan="4" class="muted">Carregando do GitHub…</td></tr>`;
+      try{
+        const { list, sha } = await readCars();
+        cacheList = Array.isArray(list)?list:[]; currentSha = sha || null; renderGitTable();
+      }catch(e){
+        $('#tblGit tbody').innerHTML = `<tr><td colspan="4" class="muted">Erro ao carregar do GitHub (${e.message}).</td></tr>`;
+      }
+    }
+    async function onDeleteItem(ev){
+      const id = ev.currentTarget.getAttribute('data-id');
+      if(!confirm('Excluir este anúncio do GitHub?')) return;
+      try{
+        const updated = cacheList.filter(x=>x.id!==id);
+        const res = await writeCars(updated, currentSha);
+        currentSha = res.content && res.content.sha ? res.content.sha : (res.sha || currentSha);
+        // Após excluir, força leitura fresca do GitHub
+        await refreshFromGit();
+        alert('Excluído e commit criado no GitHub.');
+      }catch(e){ alert('Falha ao excluir no GitHub: '+e.message); }
+    }
+
+    
+// ---------- UPLOAD DE IMAGENS PARA O GITHUB ----------
+async function uploadFileToGithub(file, folder="imagens"){
+  const arrayBuffer = await file.arrayBuffer();
+  let binary = '';
+  const bytes = new Uint8Array(arrayBuffer);
+  for(let i=0; i<bytes.length; i++){
+    binary += String.fromCharCode(bytes[i]);
+  }
+  const contentB64 = btoa(binary);
+
+  const safeName = Date.now() + "-" + file.name.replace(/\s+/g, "_");
+  const path = `${folder}/${safeName}`;
+
+  const url = `https://api.github.com/repos/${cfg.repo}/contents/${path}`;
+  const body = {
+    message: "add image " + safeName,
+    content: contentB64,
+    branch: cfg.branch
+  };
+
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: Object.assign({}, apiHeaders(), {'Content-Type':'application/json'}),
+    body: JSON.stringify(body)
+  });
+
+  if(!res.ok) throw new Error("Erro ao enviar imagem: " + res.status);
+  const out = await res.json();
+
+  return `https://raw.githubusercontent.com/${cfg.repo}/${cfg.branch}/${path}`;
+}
+
+// --------- PUBLICAR DIRETO (form -> GitHub) ---------
+    
+async function buildPayload(){
+  let capaUrl = "";
+  let outrasUrls = [];
+
+  if(galeria.length){
+    capaUrl = await uploadFileToGithub(galeria[0], "imagens");
+    for(let i=1; i<galeria.length; i++){
+      const url = await uploadFileToGithub(galeria[i], "imagens");
+      outrasUrls.push(url);
+    }
+  }
+
+  return {
+    id: crypto.randomUUID(),
+    titulo: $('#fTitulo').value.trim(),
+    marca: $('#fMarca').value.trim(),
+    modelo: $('#fModelo').value.trim(),
+    ano: $('#fAno').value.trim(),
+    preco: Number($('#fPreco').value || 0),
+    km: Number($('#fKm').value || 0),
+    contato: $('#fContato').value.trim(),
+    desc: $('#fDesc').value.trim(),
+    foto: capaUrl,
+    fotos: outrasUrls,
+    status: 'publicado',
+    createdAt: Date.now()
+  };
+}
+
+    function resetForm(){ $('#carForm').reset(); galeria = []; renderGaleria(); }
+
+    $('#carForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const p = await buildPayload();
+      if(!p.titulo || !p.marca || !p.modelo || !p.ano){ 
+        alert('Preencha os campos obrigatórios.'); 
+        return; 
+      }
+
+      try{
+        const { list, sha } = await readCars();
+        currentSha = sha || currentSha;
+        const updated = [p, ...(Array.isArray(list)?list:[])];
+        
+        // 🔄 Atualiza tabela imediatamente com o novo item
+        cacheList = updated;
+        renderGitTable();
+
+        // Envia pro GitHub (commit)
+        await writeCars(updated, currentSha);
+
+        // 🚫 Não força refresh imediato (evita sumir)
+        // A tabela se sincroniza no próximo ciclo automático (30s)
+
+        resetForm();
+        alert('Publicado direto no GitHub!');
+      }catch(e){
+        alert('Falha ao publicar no GitHub: '+e.message+". Verifique repo, branch, path e token (escopo contents:write).");
+      }
+    });
+
+    // --------- Download (do GitHub) ---------
+    function dl(filename, text){ const a=document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download = filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000); }
+    $('#btnDownload').addEventListener('click', async ()=>{ try{ const { list } = await readCars(); dl('cars.json', JSON.stringify(list||[], null, 2)); }catch(e){ alert('Não foi possível baixar: '+e.message); } });
+
+    async function init(){ renderGaleria(); await refreshFromGit(); }
+    async function boot(){
+      loadCfg();
+      try{
+        const remember = localStorage.getItem('cfg_remember_pass') === '1';
+        const pass = localStorage.getItem('cfg_passphrase');
+        if(remember && pass){ await loadSyncedCfg(pass); }
+      }catch(_e){}
+      await init();
+    }
+    boot();
+    
+    // Se faltarem dados do GitHub, abre o modal automaticamente
+    try{ setTimeout(()=>{ if(!cfg || !cfg.repo || !cfg.branch || !cfg.path){ document.getElementById('cfg-modal').classList.add('open'); } }, 500); }catch(e){}
+  </script>
+</body>
+</html>
