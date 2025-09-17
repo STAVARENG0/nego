@@ -106,7 +106,26 @@
     }
     #cfg-modal .modal-x:focus{ outline:2px solid var(--border); outline-offset:2px; }
 
-  </style>
+  
+/* ======= EDIÇÕES (sem alterar layout) ======= */
+/* Modal de edição reutiliza o mesmo estilo do modal de configuração */
+#edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000000}
+#edit-modal.open{display:flex}
+#edit-modal .panel{ position:relative; background:#0b2326;color:#F2F0EA;border:1px solid rgba(255,255,255,.12);padding:16px;border-radius:16px;width:min(92vw,560px);box-shadow:0 16px 36px rgba(0,0,0,.45)}
+#edit-modal label{display:block;margin-bottom:10px;font-size:.9rem;color:#9EB3B2}
+#edit-modal input, #edit-modal textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#092023;color:#fff;margin-top:6px}
+#edit-modal textarea{min-height:110px;resize:vertical}
+#edit-modal .row{display:flex;gap:10px}
+#edit-modal .row > *{flex:1}
+#edit-modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+#edit-modal .modal-x{ position:absolute; top:8px; right:8px; width:36px; height:36px; display:grid; place-items:center; background:transparent; border:0; color:#F2F0EA; font-size:22px; line-height:1; cursor:pointer; z-index:2; }
+#edit-modal .modal-x:focus{ outline:2px solid rgba(255,255,255,.12); outline-offset:2px; }
+
+/* Selo SOLD sobre o título e linha esmaecida */
+.title-cell{position:relative}
+.sold-badge{position:absolute; top:4px; left:4px; background:#ef4444; color:#fff; border-radius:8px; padding:2px 8px; font-size:11px; font-weight:800; letter-spacing:.5px; box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.sold-row{opacity:.6}
+</style>
 </head>
 <body>
   <div class="container card" id="app">
@@ -787,20 +806,30 @@ $('#inputCamera').addEventListener('change', (ev)=>{
     let currentSha = null; // sha do cars.json carregado
     let cacheList = [];    // lista em memória
 
-    function renderGitTable(){
-      const tbody = $('#tblGit tbody');
-      if(!cacheList.length){ tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum anúncio.</td></tr>`; return; }
-      tbody.innerHTML = cacheList.map(item=>{
-        const dt = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-BR') : '-';
-        return `<tr>
-          <td>${escapeHTML(item.titulo || '')}</td>
-          <td>${fmtBRL(item.preco)}</td>
-          <td>${dt}</td>
-          <td><button class="btn btn-danger" data-act="del" data-id="${item.id}">Excluir</button></td>
-        </tr>`;
-      }).join('');
-      $$('#tblGit [data-act="del"]').forEach(btn=>btn.addEventListener('click', onDeleteItem));
-    }
+    
+function renderGitTable(){
+  const tbody = $('#tblGit tbody');
+  if(!cacheList.length){ tbody.innerHTML = `<tr><td colspan="4" class="muted">Nenhum anúncio.</td></tr>`; return; }
+  tbody.innerHTML = cacheList.map(item=>{
+    const dt = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-BR') : '-';
+    const sold = !!item.sold;
+    const titleHtml = `<div class="title-cell">${sold?'<span class="sold-badge">SOLD</span>':''}${escapeHTML(item.titulo || '')}</div>`;
+    return `<tr class="${sold?'sold-row':''}">
+      <td>${titleHtml}</td>
+      <td>${fmtBRL(item.preco)}</td>
+      <td>${dt}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-muted" data-act="edit" data-id="${item.id}">Editar</button>
+          <button class="btn btn-danger" data-act="del" data-id="${item.id}">Excluir</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  $$('#tblGit [data-act="del"]').forEach(btn=>btn.addEventListener('click', onDeleteItem));
+  $$('#tblGit [data-act="edit"]').forEach(btn=>btn.addEventListener('click', onEditItem));
+}
+
     async function refreshFromGit(){
       $('#tblGit tbody').innerHTML = `<tr><td colspan="4" class="muted">Carregando do GitHub…</td></tr>`;
       try{
@@ -824,6 +853,105 @@ $('#inputCamera').addEventListener('change', (ev)=>{
     }
 
     
+
+async function onEditItem(ev){
+  const id = ev.currentTarget.getAttribute('data-id');
+  const item = cacheList.find(x=>x.id===id);
+  if(!item){ alert('Item não encontrado.'); return; }
+  // Preenche campos
+  $('#eId').value = item.id || '';
+  $('#eTitulo').value = item.titulo || '';
+  $('#eMarca').value = item.marca || '';
+  $('#eModelo').value = item.modelo || '';
+  $('#eAno').value = item.ano || '';
+  $('#ePreco').value = (item.preco != null ? item.preco : '');
+  $('#eKm').value = (item.km != null ? item.km : '');
+  $('#eContato').value = item.contato || '';
+  $('#eDesc').value = item.desc || '';
+  $('#eFoto').value = item.foto || '';
+  try{
+    const fotosArr = Array.isArray(item.fotos) ? item.fotos : [];
+    $('#eFotos').value = fotosArr.join('\n');
+  }catch(_e){ $('#eFotos').value = ''; }
+  $('#eSold').checked = !!item.sold;
+
+  // Abre modal
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+(function(){
+  function ensureEditBindings(){
+    const cancelBtn = document.getElementById('editCancelBtn');
+    if(cancelBtn && !cancelBtn.dataset.bound){
+      cancelBtn.addEventListener('click', ()=> document.getElementById('edit-modal').classList.remove('open') );
+      cancelBtn.dataset.bound = '1';
+    }
+
+    const form = document.getElementById('editForm');
+    if(form && !form.dataset.bound){
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const $ = (sel,ctx=document)=>ctx.querySelector(sel);
+        const id = $('#eId').value;
+        const idx = cacheList.findIndex(x=>x.id===id);
+        if(idx<0){ alert('Item não encontrado.'); return; }
+
+        const fotosText = ($('#eFotos').value || '').trim();
+        const fotosArr = fotosText ? fotosText.split(/\r?\n/).map(s=>s.trim()).filter(Boolean) : [];
+
+        const prev = cacheList[idx] || {};
+        const nowSold = $('#eSold').checked === true;
+        const prevSold = !!prev.sold;
+        const nextSoldAt = nowSold ? (prev.sold_at || new Date().toISOString()) : null;
+
+        const updated = Object.assign({}, prev, {
+          titulo: $('#eTitulo').value.trim(),
+          marca: $('#eMarca').value.trim(),
+          modelo: $('#eModelo').value.trim(),
+          ano: $('#eAno').value.trim(),
+          preco: Number($('#ePreco').value || 0),
+          km: Number($('#eKm').value || 0),
+          contato: $('#eContato').value.trim(),
+          desc: $('#eDesc').value.trim(),
+          foto: $('#eFoto').value.trim(),
+          fotos: fotosArr,
+          sold: nowSold,
+          status: nowSold ? 'sold' : (prev.status || 'publicado'),
+          sold_at: nextSoldAt
+        });
+
+        const newList = cacheList.slice();
+        newList[idx] = updated;
+
+        try{
+          const res = await writeCars(newList, currentSha);
+          currentSha = (res && res.content && res.content.sha) ? res.content.sha : (res.sha || currentSha);
+          await refreshFromGit();
+          document.getElementById('edit-modal').classList.remove('open');
+          alert('Alterações salvas no GitHub.');
+        }catch(err){
+          alert('Falha ao salvar no GitHub: ' + err.message);
+        }
+      });
+      form.dataset.bound = '1';
+    }
+  }
+
+  // Bind once DOM is ready (modal HTML is after the script)
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ensureEditBindings);
+  }else{
+    ensureEditBindings();
+  }
+
+  // Extra safety: whenever the modal is opened for edit, ensure bindings exist
+  const originalOnEditItem = onEditItem;
+  onEditItem = async function(ev){
+    ensureEditBindings();
+    return originalOnEditItem.call(this, ev);
+  };
+})();
+
 // ---------- UPLOAD DE IMAGENS PARA O GITHUB ----------
 async function uploadFileToGithub(file, folder="imagens"){
   const arrayBuffer = await file.arrayBuffer();
@@ -883,6 +1011,7 @@ async function buildPayload(){
     foto: capaUrl,
     fotos: outrasUrls,
     status: 'publicado',
+    sold: false,
     createdAt: Date.now()
   };
 }
@@ -938,5 +1067,63 @@ async function buildPayload(){
     // Se faltarem dados do GitHub, abre o modal automaticamente
     try{ setTimeout(()=>{ if(!cfg || !cfg.repo || !cfg.branch || !cfg.path){ document.getElementById('cfg-modal').classList.add('open'); } }, 500); }catch(e){}
   </script>
+
+<!-- Modal de Edição -->
+<div id="edit-modal" aria-hidden="true">
+  <div class="panel">
+    <button class="modal-x" aria-label="Fechar edição" title="Fechar" onclick="document.getElementById('edit-modal').classList.remove('open')">&times;</button>
+    <h3 style="margin:0 0 10px">Editar anúncio</h3>
+    <form id="editForm">
+      <input type="hidden" id="eId">
+      <label>Título do anúncio
+        <input id="eTitulo" required>
+      </label>
+      <div class="row">
+        <label>Marca
+          <input id="eMarca" required>
+        </label>
+        <label>Modelo
+          <input id="eModelo" required>
+        </label>
+      </div>
+      <div class="row">
+        <label>Ano
+          <input id="eAno" type="number" min="1900" max="2100" required>
+        </label>
+        <label>Preço (R$)
+          <input id="ePreco" type="number" min="0" step="0.01" required>
+        </label>
+      </div>
+      <div class="row">
+        <label>Quilometragem (km)
+          <input id="eKm" type="number" min="0" step="1">
+        </label>
+        <label>Contato
+          <input id="eContato">
+        </label>
+      </div>
+      <label>Descrição
+        <textarea id="eDesc"></textarea>
+      </label>
+      <div class="row">
+        <label>Foto de capa (URL)
+          <input id="eFoto" placeholder="https://...">
+        </label>
+      </div>
+      <label>Galeria (uma URL por linha)
+        <textarea id="eFotos" placeholder="https://...
+https://..."></textarea>
+      </label>
+      <label style="display:flex;align-items:center;gap:.5rem;margin-top:.25rem">
+        <input type="checkbox" id="eSold" style="width:auto"> Marcar como vendido (SOLD)
+      </label>
+      <div class="actions">
+        <button type="button" class="btn btn-muted" id="editCancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary" id="editSaveBtn">Salvar alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>

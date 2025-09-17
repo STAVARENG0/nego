@@ -31,20 +31,21 @@ header{text-align:center;margin-bottom:12px}
 .brand{display:flex;align-items:center;gap:12px;justify-content:center}
 footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 
-/* BADGE SOLD GRANDE NO CANTO SUPERIOR */
+/* BADGE SOLD GIGANTE */
 .sold-badge {
   position:absolute;
-  top:10px;
-  right:10px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
   background:#ef4444;
   color:#fff;
   font-weight:900;
-  font-size:32px;
-  padding:12px 24px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  font-size:64px; /* aumentado */
+  padding:24px 48px;
+  border-radius:16px;
+  box-shadow:0 6px 16px rgba(0,0,0,.5);
   text-transform:uppercase;
-  opacity:0.9;
+  opacity:0.85;
 }
 .car.sold h3 { text-decoration: line-through; opacity:.7; }
 .car.sold .price { opacity:.6; }
@@ -71,50 +72,11 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
  </div>
 </div>
 
-<!-- MODAL STRUCTURE -->
-<div id="modal" aria-hidden="true" role="dialog">
-  <div class="overlay" data-close></div>
-  <div class="panel" role="document">
-    <button class="close" data-close>&times; Close</button>
-    <div class="gallery">
-      <div class="hero-wrap">
-        <img id="hero" class="hero" alt="Car main photo" src=""/>
-        <button class="nav prev" id="gPrev" aria-label="Anterior">‹</button>
-        <button class="nav next" id="gNext" aria-label="Próxima">›</button>
-        <div class="counter" id="mCount">0/0</div>
-      </div>
-      <div id="thumbs"></div>
-    </div>
-    <div class="details">
-      <h2 id="mTitle">—</h2>
-      <div id="mMeta" class="meta">—</div>
-      <div id="mPrice" class="price">—</div>
-      <div id="mDesc" class="desc">—</div>
-      <div class="actions">
-        <a id="mWhats" class="btn" target="_blank" rel="noopener">I'm interested</a>
-        <a id="mCall" class="btn secondary" target="_blank" rel="noopener" style="display:none">Call</a>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 const WHATSAPP = "353876342891";
 const PUBLIC_JSON = './cars.json';
 const fmtEUR = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const grid = document.getElementById('cars');
-const modal = document.getElementById('modal');
-const hero = document.getElementById('hero');
-const thumbs = document.getElementById('thumbs');
-const mTitle = document.getElementById('mTitle');
-const mMeta = document.getElementById('mMeta');
-const mPrice = document.getElementById('mPrice');
-const mDesc = document.getElementById('mDesc');
-const mWhats = document.getElementById('mWhats');
-const mCall  = document.getElementById('mCall');
-const gPrev  = document.getElementById('gPrev');
-const gNext  = document.getElementById('gNext');
-const mCount = document.getElementById('mCount');
 
 function sanitizeList(list){
   if(!Array.isArray(list)) return [];
@@ -145,27 +107,6 @@ async function readPublic(){
   }
 }
 
-function openModal(c){
-  hero.src = c.foto || 'logo.png';
-  mTitle.textContent = c.titulo || (c.marca+' '+c.modelo);
-  mMeta.textContent = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
-  mPrice.textContent = c.preco?fmtEUR(c.preco):'';
-  mDesc.textContent = c.desc || '';
-  mWhats.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hello! I'm interested in "+mTitle.textContent)}`;
-  if(c.contato){ mCall.style.display='inline-block'; mCall.href = `tel:${c.contato.replace(/[^+\\d]/g,'')}`; } else { mCall.style.display='none'; }
-
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
-}
-
-function closeModal(){
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
-}
-modal.addEventListener('click', (ev)=>{ if(ev.target.hasAttribute('data-close')) closeModal(); });
-
 function render(list){
   grid.innerHTML = '';
   if(!list.length){
@@ -193,12 +134,9 @@ function render(list){
     const body = document.createElement('div'); body.className='car-body';
     const meta = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
     const titleText = c.titulo || (c.marca+' '+(c.modelo||''));
-    const titleEl = document.createElement('h3');
-    titleEl.textContent = titleText;
-    titleEl.dataset.idx = idx;
-    titleEl.addEventListener('click', ()=> openModal(c));
-    body.appendChild(titleEl);
-    body.innerHTML += `<div class="meta">${meta}</div><div class="price">${fmtEUR(c.preco)}</div>`;
+    body.innerHTML = `<h3 data-idx="${idx}">${titleText}</h3>
+                      <div class="meta">${meta}</div>
+                      <div class="price">${fmtEUR(c.preco)}</div>`;
     el.appendChild(body);
 
     const cta = document.createElement('div'); cta.className='cta';
