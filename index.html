@@ -19,7 +19,7 @@ header{text-align:center;margin-bottom:12px}
 .divider{height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:18px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;align-items:stretch}
 .car{ background:#102a2d; border:1px solid rgba(255,255,255,.08); border-radius:18px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.28); display:flex;flex-direction:column; position:relative; }
-.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block}
+.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block;cursor:pointer}
 .car-body{padding:12px 14px 6px;text-align:center}
 .car h3{margin:0 0 6px;font-weight:700;font-size:16px;color:var(--ivory);cursor:pointer;text-decoration:underline dotted transparent}
 .car h3:hover{ text-decoration-color: rgba(255,255,255,.5) }
@@ -49,7 +49,7 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 .car.sold h3 { text-decoration: line-through; opacity:.7; }
 .car.sold .price { opacity:.6; }
 
-/* MODAL */
+/* MODAL ORIGINAL */
 #modal{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; }
 #modal.open{ display:grid }
 #modal .overlay{ position:absolute; inset:0; background:rgba(0,0,0,.65); backdrop-filter: blur(2px); }
@@ -58,6 +58,14 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 .close{ position:absolute; top:10px; right:14px; font-size:22px; background:none; border:none; color:#fff; cursor:pointer; }
 .hero-wrap{ position:relative; }
 .hero{ width:100%; display:block; aspect-ratio:4/3; object-fit:cover; }
+.gallery{ overflow:hidden; }
+#thumbs{ display:flex; gap:6px; padding:6px; overflow-x:auto; }
+#thumbs img{ height:60px; border-radius:6px; cursor:pointer; opacity:.7; }
+#thumbs img.active{ opacity:1; outline:2px solid var(--orange); }
+.nav{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.5); border:none; color:#fff; font-size:28px; cursor:pointer; padding:4px 10px; border-radius:6px; }
+.nav.prev{ left:10px; }
+.nav.next{ right:10px; }
+.counter{ position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,.5); padding:2px 8px; border-radius:6px; font-size:12px; }
 </style>
 </head>
 <body>
@@ -81,7 +89,7 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
  </div>
 </div>
 
-<!-- MODAL STRUCTURE -->
+<!-- MODAL RESTAURADO -->
 <div id="modal" aria-hidden="true" role="dialog">
   <div class="overlay" data-close></div>
   <div class="panel" role="document">
@@ -89,7 +97,11 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
     <div class="gallery">
       <div class="hero-wrap">
         <img id="hero" class="hero" alt="Car main photo" src=""/>
+        <button class="nav prev" id="gPrev" aria-label="Anterior">‹</button>
+        <button class="nav next" id="gNext" aria-label="Próxima">›</button>
+        <div class="counter" id="mCount">0/0</div>
       </div>
+      <div id="thumbs"></div>
     </div>
     <div class="details">
       <h2 id="mTitle">—</h2>
@@ -111,12 +123,18 @@ const fmtEUR = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EU
 const grid = document.getElementById('cars');
 const modal = document.getElementById('modal');
 const hero = document.getElementById('hero');
+const thumbs = document.getElementById('thumbs');
 const mTitle = document.getElementById('mTitle');
 const mMeta = document.getElementById('mMeta');
 const mPrice = document.getElementById('mPrice');
 const mDesc = document.getElementById('mDesc');
 const mWhats = document.getElementById('mWhats');
 const mCall  = document.getElementById('mCall');
+const gPrev  = document.getElementById('gPrev');
+const gNext  = document.getElementById('gNext');
+const mCount = document.getElementById('mCount');
+
+let gallery=[]; let gIndex=0;
 
 function sanitizeList(list){
   if(!Array.isArray(list)) return [];
@@ -148,7 +166,10 @@ async function readPublic(){
 }
 
 function openModal(c){
-  hero.src = c.foto || 'logo.png';
+  gallery = c.fotos && c.fotos.length? c.fotos : [c.foto||'logo.png'];
+  gIndex = 0;
+  updateGallery();
+
   mTitle.textContent = c.titulo || (c.marca+' '+c.modelo);
   mMeta.textContent = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
   mPrice.textContent = c.preco?fmtEUR(c.preco):'';
@@ -160,6 +181,22 @@ function openModal(c){
   modal.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
 }
+
+function updateGallery(){
+  hero.src = gallery[gIndex];
+  mCount.textContent = `${gIndex+1}/${gallery.length}`;
+  thumbs.innerHTML = '';
+  gallery.forEach((src,i)=>{
+    const t=document.createElement('img');
+    t.src=src;
+    if(i===gIndex) t.classList.add('active');
+    t.addEventListener('click',()=>{gIndex=i;updateGallery();});
+    thumbs.appendChild(t);
+  });
+}
+
+gPrev.addEventListener('click',()=>{ gIndex=(gIndex-1+gallery.length)%gallery.length; updateGallery(); });
+gNext.addEventListener('click',()=>{ gIndex=(gIndex+1)%gallery.length; updateGallery(); });
 
 function closeModal(){
   modal.classList.remove('open');
@@ -183,6 +220,7 @@ function render(list){
     const img = document.createElement('img'); 
     img.src = c.foto || 'logo.png'; 
     img.alt = c.titulo || 'Car photo'; 
+    img.addEventListener('click',()=>openModal(c));
     el.appendChild(img);
 
     if(c.sold){
