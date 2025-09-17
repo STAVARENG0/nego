@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "id": "5d4e8903-bb4b-439d-b924-252bb43be406",
+    "titulo": "PASSAT 1,6TDI DISEL 105HP",
+    "marca": "Volkswagen",
+    "modelo": "Passat",
+    "ano": "2013",
+    "preco": 5000,
+    "km": 290000,
+    "contato": "",
+    "desc": "",
+    "foto": "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126807456-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.07_361ebce8.jpg",
+    "fotos": [
+      "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126813979-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_5bde5a8d.jpg",
+      "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126820373-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_6beab7e0.jpg",
+      "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126823272-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_8ea0e828.jpg",
+      "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126825587-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_ad123635.jpg",
+      "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126828027-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_f822582a.jpg"
+    ],
+    "status": "publicado",
+    "sold": false,
+    "createdAt": 1758126830120
+  }
+]
