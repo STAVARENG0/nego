@@ -17,8 +17,9 @@
       "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126825587-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_ad123635.jpg",
       "https://raw.githubusercontent.com/STAVARENG0/Nego/main/imagens/1758126828027-Imagem_do_WhatsApp_de_2025-09-12_à(s)_12.13.09_f822582a.jpg"
     ],
-    "status": "publicado",
-    "sold": false,
-    "createdAt": 1758126830120
+    "status": "sold",
+    "sold": true,
+    "createdAt": 1758126830120,
+    "sold_at": "2025-09-17T16:35:31.420Z"
   }
 ]
