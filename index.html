@@ -19,10 +19,11 @@ header{text-align:center;margin-bottom:12px}
 .divider{height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:18px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;align-items:stretch}
 .car{ background:#102a2d; border:1px solid rgba(255,255,255,.08); border-radius:18px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.28); display:flex;flex-direction:column; position:relative; }
-.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block}
+.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block;cursor:pointer}
 .car-body{padding:12px 14px 6px}
 .car h3{margin:0 0 6px;font-weight:700;font-size:16px;color:var(--ivory);cursor:pointer;text-decoration:underline dotted transparent}
 .car h3:hover{ text-decoration-color: rgba(255,255,255,.5) }
+.car h3.sold { text-decoration: line-through; color: #f87171; }
 .meta{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:8px}
 .price{font-weight:700;color:var(--ivory);margin-bottom:6px}
 .cta{padding:12px 14px 14px;border-top:1px dashed rgba(255,255,255,.08)}
@@ -122,7 +123,6 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
      <img src="logo.png" alt="Logo" style="max-width:220px;height:auto;display:block;margin:0 auto 2px;">
      <div class="subtitle"><span style="font-size:1.6rem;font-weight:600;color:var(--ivory)">Cars for Sale</span><br>Quality used cars • Ireland • Inquiries welcome</div>
    </div>
-   <!-- Botão Admin mantido -->
    <a href="painel.html" class="btn" style="position:absolute; top:16px; right:16px; padding:8px 12px; border-radius:999px;background:linear-gradient(90deg,var(--muted), #cfd9d8); color:#0e2b2e; font-size:12px; width:auto; display:inline-block;text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.24)">Admin</a>
   </header>
 
@@ -211,6 +211,7 @@ function openModal(c){
   galleryIndex = 0; mCount.textContent = `1/${galleryImgs.length}`;
   thumbs.innerHTML = galleryImgs.map((src,i)=>`<img ${i===0?'class="active"':''} data-idx="${i}" src="${src}">`).join('');
   mTitle.textContent = c.titulo;
+  if(c.sold){ mTitle.classList.add('sold'); } else { mTitle.classList.remove('sold'); }
   mMeta.textContent = [c.ano, c.km?`${c.km} km`:null, c.marca, c.modelo].filter(Boolean).join(' • ');
   mPrice.textContent = c.preco?fmtEUR(c.preco):'';
   mDesc.textContent = c.desc || '';
@@ -232,9 +233,14 @@ function render(list){
     const body=document.createElement('div'); body.className='car-body';
     const meta=[c.ano?`Year ${c.ano}`:null,c.km?`${c.km} km`:null,c.marca,c.modelo].filter(Boolean).join(' • ');
     const titleText=c.titulo || (c.marca+' '+(c.modelo||''));
-    body.innerHTML=`<h3 data-idx="${idx}">${titleText}</h3><div class="meta">${meta}</div><div class="price">${fmtEUR(c.preco)}</div>`;
+    const h3=document.createElement('h3'); h3.textContent=titleText; h3.dataset.idx=idx;
+    if(c.sold){ h3.classList.add('sold'); }
+    h3.addEventListener('click',()=>openModal(c));
+    body.appendChild(h3);
+    const metaDiv=document.createElement('div'); metaDiv.className='meta'; metaDiv.textContent=meta; body.appendChild(metaDiv);
+    const priceDiv=document.createElement('div'); priceDiv.className='price'; priceDiv.textContent=fmtEUR(c.preco); body.appendChild(priceDiv);
     el.appendChild(body);
-    body.querySelector('h3').addEventListener('click',()=>openModal(c));
+    img.addEventListener('click',()=>openModal(c));
     const cta=document.createElement('div'); cta.className='cta';
     const a=document.createElement('a'); a.className='btn'; a.target='_blank'; a.rel='noopener';
     a.href=`https://wa.me/${WHATSAPP}?text=Hello! I'm interested in the ${titleText}`;
