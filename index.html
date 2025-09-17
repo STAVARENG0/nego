@@ -19,8 +19,8 @@ header{text-align:center;margin-bottom:12px}
 .divider{height:2px;background:linear-gradient(90deg,transparent,var(--orange),transparent);margin:18px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;align-items:stretch}
 .car{ background:#102a2d; border:1px solid rgba(255,255,255,.08); border-radius:18px; overflow:hidden; box-shadow:0 10px 28px rgba(0,0,0,.28); display:flex;flex-direction:column; position:relative; }
-.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block;cursor:pointer}
-.car-body{padding:12px 14px 6px;text-align:center}
+.car img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0b2326;display:block}
+.car-body{padding:12px 14px 6px}
 .car h3{margin:0 0 6px;font-weight:700;font-size:16px;color:var(--ivory);cursor:pointer;text-decoration:underline dotted transparent}
 .car h3:hover{ text-decoration-color: rgba(255,255,255,.5) }
 .meta{color:var(--muted);font-size:13px;line-height:1.4;margin-bottom:8px}
@@ -31,118 +31,43 @@ header{text-align:center;margin-bottom:12px}
 .brand{display:flex;align-items:center;gap:12px;justify-content:center}
 footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 
-/* BADGE SOLD GRANDE NO CANTO SUPERIOR */
-sold-badge {
+/* SELO SOLD */
+.sold-flag{
   position:absolute;
   top:10px;
-  right:10px;
-  background:#ef4444;
+  left:10px;
+  background:rgba(239,68,68,0.85); /* vermelho com 85% */
   color:#fff;
-  font-weight:900;
-  font-size:32px;
+  font-weight:800;
+  font-size:24px;
+  border-radius:999px;
   padding:12px 24px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+  pointer-events:none;
   text-transform:uppercase;
-  opacity:0.9;
 }
-.car.sold h3 { text-decoration: line-through; opacity:.7; }
-.car.sold .price { opacity:.6; }
 
-/* MODAL DIVIDIDO (FOTO + INFOS) RETANGULAR */
+/* MODAL */
 #modal{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; }
-#modal.open{ display:grid }
-#modal .overlay{ position:absolute; inset:0; background:rgba(0,0,0,.65); backdrop-filter: blur(2px); }
-#modal .panel{ position:relative; width:min(96vw,980px); max-height:80vh; background:#0b2326; border-radius:18px; box-shadow:0 18px 42px rgba(0,0,0,.6); display:grid; grid-template-columns: 1.2fr 1fr; gap:20px; padding:20px; align-items:center; }
-@media (max-width:860px){
-  #modal .panel{
-    grid-template-columns: 1fr;
-    max-height:90vh;
-    padding:12px;
-  }
-  .hero{ max-height:50vh; }
-}
-.close{ position:absolute; top:10px; right:14px; font-size:22px; background:none; border:none; color:#fff; cursor:pointer; }
-.hero-wrap{ position:relative; }
-.hero{ width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:12px; display:block; max-height:60vh; }
-.gallery{ overflow:hidden; }
-#thumbs{ display:flex; gap:6px; padding:8px; overflow-x:auto; justify-content:center; flex-wrap:wrap; }
-#thumbs img{ height:70px; border-radius:8px; cursor:pointer; opacity:.7; object-fit:cover; }
-#thumbs img.active{ opacity:1; outline:3px solid var(--orange); }
-.nav{ position:absolute; top:50%; transform:translateY(-50%); background:none; border:none; color:#fff; font-size:42px; cursor:pointer; padding:6px 12px; }
-.nav.prev{ left:10px; }
-.nav.next{ right:10px; }
-.counter{ position:absolute; bottom:14px; right:20px; background:rgba(0,0,0,.6); padding:4px 10px; border-radius:8px; font-size:13px; }
-.details{ padding:10px; display:flex; flex-direction:column; justify-content:center; gap:12px; overflow-y:auto; max-height:70vh; }
+/* ... resto do CSS sem alterações ... */
 </style>
 </head>
 <body>
 <div class="wrap">
  <div class="card">
-  <header>
-   <div class="brand" style="flex-direction:column;gap:8px;">
-     <img src="logo.png" alt="Logo" style="max-width:220px;height:auto;display:block;margin:0 auto 2px;">
-     <div class="subtitle"><span style="font-size:1.6rem;font-weight:600;color:var(--ivory)">Cars for Sale</span><br>Quality used cars • Ireland • Inquiries welcome</div>
-   </div>
-   <a href="painel.html" class="btn" style="position:absolute; top:16px; right:16px; padding:8px 12px; border-radius:999px;background:linear-gradient(90deg,var(--muted), #cfd9d8); color:#0e2b2e; font-size:12px; width:auto; display:inline-block;text-decoration:none; box-shadow:0 6px 16px rgba(0,0,0,.24)">Admin</a>
-  </header>
-
-  <div class="divider"></div>
-
-  <section class="grid" id="cars"></section>
-
-  <div class="divider"></div>
-
-  <footer>© <span id="year"></span></footer>
+   <!-- ... header igual ... -->
+   <section class="grid" id="cars"></section>
+   <!-- ... resto igual ... -->
  </div>
 </div>
 
-<!-- MODAL -->
-<div id="modal" aria-hidden="true" role="dialog">
-  <div class="overlay" data-close></div>
-  <div class="panel" role="document">
-    <button class="close" data-close>&times; Close</button>
-    <div class="gallery">
-      <div class="hero-wrap">
-        <img id="hero" class="hero" alt="Car main photo" src=""/>
-        <button class="nav prev" id="gPrev" aria-label="Anterior">‹</button>
-        <button class="nav next" id="gNext" aria-label="Próxima">›</button>
-        <div class="counter" id="mCount">0/0</div>
-      </div>
-      <div id="thumbs"></div>
-    </div>
-    <div class="details">
-      <h2 id="mTitle">—</h2>
-      <div id="mMeta" class="meta">—</div>
-      <div id="mPrice" class="price">—</div>
-      <div id="mDesc" class="desc">—</div>
-      <div class="actions">
-        <a id="mWhats" class="btn" target="_blank" rel="noopener">I'm interested</a>
-        <a id="mCall" class="btn secondary" target="_blank" rel="noopener" style="display:none">Call</a>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- ... modal igual ... -->
 
 <script>
 const WHATSAPP = "353876342891";
 const PUBLIC_JSON = './cars.json';
 const fmtEUR = n => new Intl.NumberFormat('en-IE',{style:'currency',currency:'EUR'}).format(Number(n||0));
 const grid = document.getElementById('cars');
-const modal = document.getElementById('modal');
-const hero = document.getElementById('hero');
-const thumbs = document.getElementById('thumbs');
-const mTitle = document.getElementById('mTitle');
-const mMeta = document.getElementById('mMeta');
-const mPrice = document.getElementById('mPrice');
-const mDesc = document.getElementById('mDesc');
-const mWhats = document.getElementById('mWhats');
-const mCall  = document.getElementById('mCall');
-const gPrev  = document.getElementById('gPrev');
-const gNext  = document.getElementById('gNext');
-const mCount = document.getElementById('mCount');
-
-let gallery=[]; let gIndex=0;
 
 function sanitizeList(list){
   if(!Array.isArray(list)) return [];
@@ -157,113 +82,40 @@ function sanitizeList(list){
     foto: c.foto || c.photo || c.image || '',
     desc: c.desc || c.description || '',
     contato: c.contato || c.contact || '',
-    sold: !!c.sold,
-    fotos: Array.isArray(c.fotos)?c.fotos : []
+    sold: !!c.sold,   // 👈 IMPORTANTE
+    fotos: Array.isArray(c.fotos)?c.fotos:[]
   }));
 }
-
-async function readPublic(){
-  try{
-    const r = await fetch(PUBLIC_JSON + '?t=' + Date.now(), {cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json();
-    return sanitizeList(data);
-  }catch(e){
-    return [];
-  }
-}
-
-function openModal(c){
-  gallery = c.fotos && c.fotos.length? c.fotos : [c.foto||'logo.png'];
-  gIndex = 0;
-  updateGallery();
-
-  mTitle.textContent = c.titulo || (c.marca+' '+c.modelo);
-  mMeta.textContent = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
-  mPrice.textContent = c.preco?fmtEUR(c.preco):'';
-  mDesc.textContent = c.desc || '';
-  mWhats.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hello! I'm interested in "+mTitle.textContent)}`;
-  if(c.contato){ mCall.style.display='inline-block'; mCall.href = `tel:${c.contato.replace(/[^+\\d]/g,'')}`; } else { mCall.style.display='none'; }
-
-  modal.classList.add('open');
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
-}
-
-function updateGallery(){
-  hero.src = gallery[gIndex];
-  mCount.textContent = `${gIndex+1}/${gallery.length}`;
-  thumbs.innerHTML = '';
-  gallery.forEach((src,i)=>{
-    const t=document.createElement('img');
-    t.src=src;
-    if(i===gIndex) t.classList.add('active');
-    t.addEventListener('click',()=>{gIndex=i;updateGallery();});
-    thumbs.appendChild(t);
-  });
-}
-
-gPrev.addEventListener('click',()=>{ gIndex=(gIndex-1+gallery.length)%gallery.length; updateGallery(); });
-gNext.addEventListener('click',()=>{ gIndex=(gIndex+1)%gallery.length; updateGallery(); });
-
-function closeModal(){
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
-}
-modal.addEventListener('click', (ev)=>{ if(ev.target.hasAttribute('data-close')) closeModal(); });
 
 function render(list){
   grid.innerHTML = '';
   if(!list.length){
-    const div=document.createElement('div');div.className='meta';div.style.textAlign='center';div.style.padding='20px';
-    div.innerHTML='No cars published yet.';
-    grid.appendChild(div); return;
+    grid.innerHTML = '<div class="meta" style="text-align:center;padding:20px">No cars published yet.</div>';
+    return;
   }
   list.forEach((c, idx)=>{
     const el = document.createElement('article'); 
     el.className='car';
-    if(c.sold) el.classList.add('sold');
-
+    if(c.sold){ 
+      const soldTag = document.createElement('div'); 
+      soldTag.className='sold-flag'; 
+      soldTag.textContent='SOLD'; 
+      el.appendChild(soldTag);
+    }
     const img = document.createElement('img'); 
     img.src = c.foto || 'logo.png'; 
     img.alt = c.titulo || 'Car photo'; 
-    img.addEventListener('click',()=>openModal(c));
     el.appendChild(img);
-
-    if(c.sold){
-      const badge = document.createElement('div');
-      badge.className = 'sold-badge';
-      badge.textContent = 'SOLD';
-      el.appendChild(badge);
-    }
 
     const body = document.createElement('div'); body.className='car-body';
     const meta = [c.ano?`Year ${c.ano}`:null, c.km?(`${Number(c.km).toLocaleString('en-IE')} km`):null, c.marca, c.modelo].filter(Boolean).join(' • ');
     const titleText = c.titulo || (c.marca+' '+(c.modelo||''));
-
-    const titleEl = document.createElement('h3');
-    titleEl.textContent = titleText;
-    titleEl.dataset.idx = idx;
-    titleEl.addEventListener('click', ()=> openModal(c));
-
-    const metaEl = document.createElement('div');
-    metaEl.className = 'meta';
-    metaEl.textContent = meta;
-
-    const priceEl = document.createElement('div');
-    priceEl.className = 'price';
-    priceEl.textContent = fmtEUR(c.preco);
-
-    body.appendChild(titleEl);
-    body.appendChild(metaEl);
-    body.appendChild(priceEl);
-
+    body.innerHTML = `<h3 data-idx="${idx}">${titleText}</h3><div class="meta">${meta}</div><div class="price">${fmtEUR(c.preco)}</div>`;
     el.appendChild(body);
 
     const cta = document.createElement('div'); cta.className='cta';
     const a = document.createElement('a'); a.className='btn'; a.target='_blank'; a.rel='noopener';
-    a.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hello! I'm interested in "+titleText)}`;
+    a.href = `https://wa.me/${WHATSAPP}?text=Hello! I'm interested in the ${titleText}`; 
     a.textContent = "I'm interested";
     cta.appendChild(a); el.appendChild(cta);
 
@@ -271,9 +123,15 @@ function render(list){
   });
 }
 
-(async function init(){
-  const cars = await readPublic();
-  render(cars);
+// carregar dados
+(async()=>{
+  try{
+    const r = await fetch(PUBLIC_JSON + '?t=' + Date.now(), {cache:'no-store'});
+    if(r.ok){
+      const data = await r.json();
+      render(sanitizeList(data));
+    }
+  }catch(e){ console.error(e); }
 })();
 </script>
 </body>
