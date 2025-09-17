@@ -49,23 +49,24 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
 .car.sold h3 { text-decoration: line-through; opacity:.7; }
 .car.sold .price { opacity:.6; }
 
-/* MODAL ORIGINAL */
+/* MODAL RESTAURADO E AJUSTADO */
 #modal{ position:fixed; inset:0; display:none; place-items:center; z-index:9999; }
 #modal.open{ display:grid }
 #modal .overlay{ position:absolute; inset:0; background:rgba(0,0,0,.65); backdrop-filter: blur(2px); }
-#modal .panel{ position:relative; width:min(96vw,980px); max-height:92vh; overflow:hidden; background:#0b2326; color:var(--ivory); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 42px rgba(0,0,0,.6); display:grid; grid-template-columns: 1.2fr 1fr; }
-@media (max-width:860px){ #modal .panel{ grid-template-columns: 1fr; } }
+#modal .panel{ position:relative; width:min(96vw,980px); max-height:92vh; overflow:hidden; background:#0b2326; color:var(--ivory); border:1px solid rgba(255,255,255,.12); border-radius:18px; box-shadow:0 18px 42px rgba(0,0,0,.6); display:grid; grid-template-columns: 1.2fr 1fr; gap:20px; padding:20px; }
+@media (max-width:860px){ #modal .panel{ grid-template-columns: 1fr; max-height:96vh; } }
 .close{ position:absolute; top:10px; right:14px; font-size:22px; background:none; border:none; color:#fff; cursor:pointer; }
-.hero-wrap{ position:relative; }
-.hero{ width:100%; display:block; aspect-ratio:4/3; object-fit:cover; }
+.hero-wrap{ position:relative; padding:10px; background:#000; border-radius:12px; }
+.hero{ width:100%; display:block; aspect-ratio:4/3; object-fit:contain; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.5); }
 .gallery{ overflow:hidden; }
-#thumbs{ display:flex; gap:6px; padding:6px; overflow-x:auto; }
-#thumbs img{ height:60px; border-radius:6px; cursor:pointer; opacity:.7; }
-#thumbs img.active{ opacity:1; outline:2px solid var(--orange); }
+#thumbs{ display:flex; gap:6px; padding:8px; overflow-x:auto; justify-content:center; flex-wrap:wrap; }
+#thumbs img{ height:80px; border-radius:8px; cursor:pointer; opacity:.7; object-fit:cover; }
+#thumbs img.active{ opacity:1; outline:3px solid var(--orange); }
 .nav{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,.5); border:none; color:#fff; font-size:28px; cursor:pointer; padding:4px 10px; border-radius:6px; }
-.nav.prev{ left:10px; }
-.nav.next{ right:10px; }
-.counter{ position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,.5); padding:2px 8px; border-radius:6px; font-size:12px; }
+.nav.prev{ left:20px; }
+.nav.next{ right:20px; }
+.counter{ position:absolute; bottom:14px; right:20px; background:rgba(0,0,0,.6); padding:4px 10px; border-radius:8px; font-size:13px; }
+.details{ padding:10px; }
 </style>
 </head>
 <body>
@@ -89,7 +90,7 @@ footer{color:var(--muted);text-align:center;font-size:12px;margin-top:16px}
  </div>
 </div>
 
-<!-- MODAL RESTAURADO -->
+<!-- MODAL -->
 <div id="modal" aria-hidden="true" role="dialog">
   <div class="overlay" data-close></div>
   <div class="panel" role="document">
