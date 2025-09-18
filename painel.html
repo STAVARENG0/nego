@@ -111,7 +111,7 @@
 /* Modal de edição reutiliza o mesmo estilo do modal de configuração */
 #edit-modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000000}
 #edit-modal.open{display:flex}
-#edit-modal .panel{ position:relative; background:#0b2326;color:#F2F0EA;border:1px solid rgba(255,255,255,.12);padding:16px;border-radius:16px;width:min(92vw,560px);box-shadow:0 16px 36px rgba(0,0,0,.45)}
+#edit-modal .panel{ position:relative; background:#0b2326;color:#F2F0EA; border:1px solid rgba(255,255,255,.12); padding:16px; border-radius:16px; width:min(92vw,560px); max-height:90vh; overflow-y:auto; box-shadow:0 16px 36px rgba(0,0,0,.45);}
 #edit-modal label{display:block;margin-bottom:10px;font-size:.9rem;color:#9EB3B2}
 #edit-modal input, #edit-modal textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#092023;color:#fff;margin-top:6px}
 #edit-modal textarea{min-height:110px;resize:vertical}
